@@ -1,0 +1,933 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+type Family = {
+    id: string;
+    name: string;
+    address: string;
+    membershipDate: string;
+};
+
+const initialFamilies: Family[] = [
+    {
+        id: "1",
+        name: "عائلة كيرلس",
+        address: "خورشيد - الإسكندرية",
+        membershipDate: "2020-05-15",
+    },
+    {
+        id: "2",
+        name: "عائلة مينا",
+        address: "سيدي بشر - الإسكندرية",
+        membershipDate: "2019-08-20",
+    },
+    {
+        id: "3",
+        name: "عائلة مارجرجس",
+        address: "عثمان محرم - البحيرة",
+        membershipDate: "2021-01-10",
+    },
+];
+
+export default function FamiliesPage() {
+    const [families, setFamilies] = useState<Family[]>(initialFamilies);
+
+    const [search, setSearch] = useState("");
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [familyName, setFamilyName] = useState("");
+
+    const [familyAddress, setFamilyAddress] = useState("");
+
+    const [membershipDate, setMembershipDate] = useState("");
+
+    /*
+      |--------------------------------------------------------------------------
+      | Filter Families
+      |--------------------------------------------------------------------------
+      */
+
+    const filteredFamilies = useMemo(() => {
+        const value = search.trim().toLowerCase();
+
+        if (!value) {
+            return families;
+        }
+
+        return families.filter((family) =>
+            family.name.toLowerCase().includes(value),
+        );
+    }, [families, search]);
+
+    /*
+      |--------------------------------------------------------------------------
+      | Add Family
+      |--------------------------------------------------------------------------
+      */
+
+    const handleAddFamily = () => {
+        const name = familyName.trim();
+        const address = familyAddress.trim();
+
+        if (!name || !address || !membershipDate) {
+            return;
+        }
+
+        const newFamily: Family = {
+            id: crypto.randomUUID(),
+            name,
+            address,
+            membershipDate,
+        };
+
+        setFamilies((prev) => [...prev, newFamily]);
+
+        handleCloseModal();
+    };
+
+    /*
+      |--------------------------------------------------------------------------
+      | Close Modal
+      |--------------------------------------------------------------------------
+      */
+
+    const handleCloseModal = () => {
+        setFamilyName("");
+        setFamilyAddress("");
+        setMembershipDate("");
+        setIsModalOpen(false);
+    };
+
+    /*
+      |--------------------------------------------------------------------------
+      | Format Date
+      |--------------------------------------------------------------------------
+      */
+
+    const formatDate = (date: string) => {
+        if (!date) return "-";
+
+        const [year, month, day] = date.split("-");
+
+        return `${day}/${month}/${year}`;
+    };
+
+    return (
+        <main
+            dir="rtl"
+            className="
+        min-h-screen
+        bg-[var(--bg-page)]
+        px-4
+        py-8
+        sm:px-6
+        lg:px-8
+      "
+        >
+            <div className="mx-auto max-w-7xl">
+                {/* =====================================================
+            PAGE HEADER
+        ====================================================== */}
+
+                <section className="mb-8">
+                    <div
+                        className="
+              flex
+              flex-col
+              gap-5
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+            "
+                    >
+                        {/* Title */}
+
+                        <div>
+                            <div className="mb-2 flex items-center gap-2">
+                                <div
+                                    className="
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-[var(--radius-md)]
+                    bg-[var(--primary-light)]
+                    text-[var(--primary)]
+                  "
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.8}
+                                        stroke="currentColor"
+                                        className="h-5 w-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.125-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.003A23.906 23.906 0 0 1 8.625 21c-2.331 0-4.512-.645-6.375-1.77 0-.78.207-1.514.568-2.14m12.182-3.612a4.125 4.125 0 1 0-7.533-2.493M12 10.5a4.125 4.125 0 1 1-8.25 0 4.125 4.125 0 0 1 8.25 0ZM12 10.5a4.125 4.125 0 0 1 7.533-2.493"
+                                        />
+                                    </svg>
+                                </div>
+
+                                <h1
+                                    className="
+                    text-2xl
+                    font-bold
+                    text-[var(--text-main)]
+                    sm:text-3xl
+                  "
+                                >
+                                    العائلات
+                                </h1>
+                            </div>
+
+                            <p
+                                className="
+                  text-sm
+                  text-[var(--text-muted)]
+                "
+                            >
+                                إدارة عائلات الكنيسة وبياناتها
+                            </p>
+                        </div>
+
+                        {/* Add Button */}
+
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                rounded-[var(--radius-md)]
+                bg-[var(--primary)]
+                px-5
+                py-3
+                text-sm
+                font-semibold
+                text-white
+                shadow-sm
+                transition-all
+                hover:-translate-y-0.5
+                hover:bg-[var(--primary-hover)]
+                focus:outline-none
+                focus:ring-4
+                focus:ring-[var(--primary-focus)]
+              "
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="h-5 w-5"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 4.5v15m7.5-7.5h-15"
+                                />
+                            </svg>
+                            إضافة عيلة
+                        </button>
+                    </div>
+                </section>
+
+                {/* =====================================================
+            SEARCH
+        ====================================================== */}
+
+                <section
+                    className="
+            mb-6
+            rounded-[var(--radius-lg)]
+            border
+            border-[var(--border-color)]
+            bg-[var(--card-bg)]
+            p-5
+            shadow-[var(--shadow-card)]
+          "
+                >
+                    <label
+                        htmlFor="family-search"
+                        className="
+              mb-2
+              block
+              text-sm
+              font-semibold
+              text-[var(--text-main)]
+            "
+                    >
+                        البحث في العائلات
+                    </label>
+
+                    <div className="relative">
+                        {/* Search Icon */}
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                            stroke="currentColor"
+                            className="
+                pointer-events-none
+                absolute
+                right-4
+                top-1/2
+                h-5
+                w-5
+                -translate-y-1/2
+                text-[var(--text-muted)]
+              "
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                            />
+                        </svg>
+
+                        <input
+                            id="family-search"
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="ابحث باسم العيلة..."
+                            className="
+                w-full
+                rounded-[var(--radius-md)]
+                border
+                border-[var(--border-color)]
+                bg-[var(--bg-page)]
+                py-3
+                pr-12
+                pl-4
+                text-sm
+                text-[var(--text-main)]
+                outline-none
+                transition-all
+                placeholder:text-[var(--text-muted)]
+                focus:border-[var(--primary)]
+                focus:ring-4
+                focus:ring-[var(--primary-focus)]
+              "
+                        />
+                    </div>
+                </section>
+
+                {/* =====================================================
+            TABLE
+        ====================================================== */}
+
+                <section
+                    className="
+            overflow-hidden
+            rounded-[var(--radius-lg)]
+            border
+            border-[var(--border-color)]
+            bg-[var(--card-bg)]
+            shadow-[var(--shadow-card)]
+          "
+                >
+                    {/* Table Header */}
+
+                    <div
+                        className="
+              flex
+              flex-col
+              gap-2
+              border-b
+              border-[var(--border-color)]
+              px-5
+              py-5
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+              sm:px-6
+            "
+                    >
+                        <div>
+                            <h2
+                                className="
+                  text-lg
+                  font-bold
+                  text-[var(--text-main)]
+                "
+                            >
+                                قائمة العائلات
+                            </h2>
+
+                            <p
+                                className="
+                  mt-1
+                  text-sm
+                  text-[var(--text-muted)]
+                "
+                            >
+                                عدد العائلات: {filteredFamilies.length}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+
+                    <div className="overflow-x-auto">
+                        <table
+                            className="
+                w-full
+                min-w-[850px]
+                text-right
+              "
+                        >
+                            <thead
+                                className="
+                  bg-[var(--primary-light)]
+                "
+                            >
+                                <tr>
+                                    <th
+                                        scope="col"
+                                        className="
+                      px-6
+                      py-4
+                      text-sm
+                      font-bold
+                      text-[var(--text-main)]
+                    "
+                                    >
+                                        اسم العيلة
+                                    </th>
+
+                                    <th
+                                        scope="col"
+                                        className="
+                      px-6
+                      py-4
+                      text-sm
+                      font-bold
+                      text-[var(--text-main)]
+                    "
+                                    >
+                                        تاريخ عضوية الكنيسة
+                                    </th>
+
+                                    <th
+                                        scope="col"
+                                        className="
+                      px-6
+                      py-4
+                      text-sm
+                      font-bold
+                      text-[var(--text-main)]
+                    "
+                                    >
+                                        العنوان
+                                    </th>
+
+                                    <th
+                                        scope="col"
+                                        className="
+                      px-6
+                      py-4
+                      text-sm
+                      font-bold
+                      text-[var(--text-main)]
+                    "
+                                    >
+                                        الأحداث
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody
+                                className="
+                  divide-y
+                  divide-[var(--border-color)]
+                "
+                            >
+                                {filteredFamilies.map((family) => (
+                                    <tr
+                                        key={family.id}
+                                        className="
+                        transition-colors
+                        hover:bg-[var(--primary-light)]/40
+                      "
+                                    >
+                                        {/* Name */}
+
+                                        <td className="px-6 py-5">
+                                            <div
+                                                className="
+                            flex
+                            items-center
+                            gap-3
+                          "
+                                            >
+                                                <div
+                                                    className="
+                              flex
+                              h-10
+                              w-10
+                              shrink-0
+                              items-center
+                              justify-center
+                              rounded-full
+                              bg-[var(--primary-light)]
+                              font-bold
+                              text-[var(--primary)]
+                            "
+                                                >
+                                                    {family.name.charAt(0)}
+                                                </div>
+
+                                                <span
+                                                    className="
+                              font-semibold
+                              text-[var(--text-main)]
+                            "
+                                                >
+                                                    {family.name}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        {/* Membership Date */}
+
+                                        <td
+                                            className="
+                          px-6
+                          py-5
+                          text-sm
+                          text-[var(--text-muted)]
+                        "
+                                        >
+                                            {formatDate(family.membershipDate)}
+                                        </td>
+
+                                        {/* Address */}
+
+                                        <td
+                                            className="
+                          px-6
+                          py-5
+                          text-sm
+                          text-[var(--text-muted)]
+                        "
+                                        >
+                                            {family.address}
+                                        </td>
+
+                                        {/* Actions */}
+
+                                        <td className="px-6 py-5">
+                                            <Link
+                                                href={`/families/${family.id}`}
+                                                className="
+                            inline-flex
+                            items-center
+                            gap-2
+                            rounded-[var(--radius-sm)]
+                            border
+                            border-[var(--primary-border)]
+                            bg-[var(--primary-light)]
+                            px-4
+                            py-2
+                            text-sm
+                            font-semibold
+                            text-[var(--primary)]
+                            transition-all
+                            hover:bg-[var(--primary)]
+                            hover:text-white
+                          "
+                                            >
+                                                عرض العيلة
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="h-4 w-4"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                    />
+                                                </svg>
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* Empty State */}
+
+                        {filteredFamilies.length === 0 && (
+                            <div
+                                className="
+                  flex
+                  flex-col
+                  items-center
+                  justify-center
+                  px-6
+                  py-16
+                  text-center
+                "
+                            >
+                                <div
+                                    className="
+                    mb-4
+                    flex
+                    h-14
+                    w-14
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-[var(--primary-light)]
+                    text-[var(--primary)]
+                  "
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.8}
+                                        stroke="currentColor"
+                                        className="h-7 w-7"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                                        />
+                                    </svg>
+                                </div>
+
+                                <h3
+                                    className="
+                    font-bold
+                    text-[var(--text-main)]
+                  "
+                                >
+                                    لا توجد عائلات
+                                </h3>
+
+                                <p
+                                    className="
+                    mt-1
+                    text-sm
+                    text-[var(--text-muted)]
+                  "
+                                >
+                                    لم يتم العثور على عيلة بهذا الاسم
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
+
+            {/* =========================================================
+          ADD FAMILY MODAL
+      ========================================================== */}
+
+            {isModalOpen && (
+                <div
+                    dir="rtl"
+                    className="
+            fixed
+            inset-0
+            z-50
+            flex
+            items-center
+            justify-center
+            bg-black/40
+            px-4
+            py-6
+            backdrop-blur-sm
+          "
+                    onClick={handleCloseModal}
+                >
+                    <div
+                        className="
+              w-full
+              max-w-lg
+              rounded-[var(--radius-lg)]
+              border
+              border-[var(--border-color)]
+              bg-[var(--card-bg)]
+              shadow-2xl
+            "
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+
+                        <div
+                            className="
+                flex
+                items-center
+                justify-between
+                border-b
+                border-[var(--border-color)]
+                px-6
+                py-5
+              "
+                        >
+                            <div>
+                                <h2
+                                    className="
+                    text-xl
+                    font-bold
+                    text-[var(--text-main)]
+                  "
+                                >
+                                    إضافة عيلة
+                                </h2>
+
+                                <p
+                                    className="
+                    mt-1
+                    text-sm
+                    text-[var(--text-muted)]
+                  "
+                                >
+                                    أضف بيانات العيلة الأساسية
+                                </p>
+                            </div>
+
+                            {/* Close */}
+
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                aria-label="إغلاق"
+                                className="
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-[var(--radius-sm)]
+                  text-lg
+                  text-[var(--text-muted)]
+                  transition-colors
+                  hover:bg-[var(--primary-light)]
+                  hover:text-[var(--primary)]
+                "
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+
+                        <div className="space-y-5 px-6 py-6">
+                            {/* Family Name */}
+
+                            <div>
+                                <label
+                                    htmlFor="modal-family-name"
+                                    className="
+                    mb-2
+                    block
+                    text-sm
+                    font-semibold
+                    text-[var(--text-main)]
+                  "
+                                >
+                                    اسم العيلة
+                                </label>
+
+                                <input
+                                    id="modal-family-name"
+                                    type="text"
+                                    value={familyName}
+                                    onChange={(e) => setFamilyName(e.target.value)}
+                                    placeholder="مثال: عائلة كيرلس"
+                                    autoFocus
+                                    className="
+                    w-full
+                    rounded-[var(--radius-md)]
+                    border
+                    border-[var(--border-color)]
+                    bg-[var(--bg-page)]
+                    px-4
+                    py-3
+                    text-sm
+                    text-[var(--text-main)]
+                    outline-none
+                    transition-all
+                    placeholder:text-[var(--text-muted)]
+                    focus:border-[var(--primary)]
+                    focus:ring-4
+                    focus:ring-[var(--primary-focus)]
+                  "
+                                />
+                            </div>
+
+                            {/* Address */}
+
+                            <div>
+                                <label
+                                    htmlFor="modal-family-address"
+                                    className="
+                    mb-2
+                    block
+                    text-sm
+                    font-semibold
+                    text-[var(--text-main)]
+                  "
+                                >
+                                    عنوان العيلة
+                                </label>
+
+                                <input
+                                    id="modal-family-address"
+                                    type="text"
+                                    value={familyAddress}
+                                    onChange={(e) => setFamilyAddress(e.target.value)}
+                                    placeholder="مثال: خورشيد - الإسكندرية"
+                                    className="
+                    w-full
+                    rounded-[var(--radius-md)]
+                    border
+                    border-[var(--border-color)]
+                    bg-[var(--bg-page)]
+                    px-4
+                    py-3
+                    text-sm
+                    text-[var(--text-main)]
+                    outline-none
+                    transition-all
+                    placeholder:text-[var(--text-muted)]
+                    focus:border-[var(--primary)]
+                    focus:ring-4
+                    focus:ring-[var(--primary-focus)]
+                  "
+                                />
+                            </div>
+
+                            {/* Membership Date */}
+
+                            <div>
+                                <label
+                                    htmlFor="modal-membership-date"
+                                    className="
+                    mb-2
+                    block
+                    text-sm
+                    font-semibold
+                    text-[var(--text-main)]
+                  "
+                                >
+                                    تاريخ عضوية الكنيسة
+                                </label>
+
+                                <input
+                                    id="modal-membership-date"
+                                    type="date"
+                                    value={membershipDate}
+                                    onChange={(e) => setMembershipDate(e.target.value)}
+                                    className="
+                    w-full
+                    rounded-[var(--radius-md)]
+                    border
+                    border-[var(--border-color)]
+                    bg-[var(--bg-page)]
+                    px-4
+                    py-3
+                    text-sm
+                    text-[var(--text-main)]
+                    outline-none
+                    transition-all
+                    focus:border-[var(--primary)]
+                    focus:ring-4
+                    focus:ring-[var(--primary-focus)]
+                  "
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+
+                        <div
+                            className="
+                flex
+                flex-col-reverse
+                gap-3
+                border-t
+                border-[var(--border-color)]
+                p-6
+                sm:flex-row
+              "
+                        >
+                            {/* Cancel */}
+
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                className="
+                  flex-1
+                  rounded-[var(--radius-md)]
+                  border
+                  border-[var(--border-color)]
+                  bg-[var(--card-bg)]
+                  px-5
+                  py-3
+                  text-sm
+                  font-semibold
+                  text-[var(--text-main)]
+                  transition-all
+                  hover:bg-[var(--primary-light)]
+                "
+                            >
+                                إلغاء
+                            </button>
+
+                            {/* Save */}
+
+                            <button
+                                type="button"
+                                onClick={handleAddFamily}
+                                disabled={
+                                    !familyName.trim() || !familyAddress.trim() || !membershipDate
+                                }
+                                className="
+                  flex-1
+                  rounded-[var(--radius-md)]
+                  bg-[var(--primary)]
+                  px-5
+                  py-3
+                  text-sm
+                  font-semibold
+                  text-white
+                  transition-all
+                  hover:bg-[var(--primary-hover)]
+                  focus:outline-none
+                  focus:ring-4
+                  focus:ring-[var(--primary-focus)]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+                "
+                            >
+                                حفظ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </main>
+    );
+}

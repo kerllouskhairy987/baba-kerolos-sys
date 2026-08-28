@@ -21,7 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ar" dir="rtl"
-      className={`${geistSans.variable} ${notoNaskhArabic.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${notoNaskhArabic.variable} h-full antialiased overflow-x-hidden`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -5,3 +5,23 @@
 /reset-password
 
 // ----------------------------------------
+
+
+
+const educationOptions = [
+  { value: 'KINDERGARTEN', label: 'حضانة' },
+  { value: 'PRIMARY', label: 'ابتدائي' },
+  { value: 'PREPARATORY', label: 'إعدادي' },
+  { value: 'GENERAL_SECONDARY', label: 'ثانوي عام' },
+  { value: 'TECHNICAL_SECONDARY', label: 'ثانوي فني' },
+  { value: 'UNIVERSITY', label: 'جامعة' },
+  { value: 'GRADUATE', label: 'متخرج' },
+  { value: 'NONE', label: 'ليس لديه' },
+];
+
+const relationOptions = [
+  { value: 'FATHER', label: 'أب' },
+  { value: 'MOTHER', label: 'أم' },
+  { value: 'SON', label: 'ابن' },
+  { value: 'DAUGHTER', label: 'ابنة' },
+];
