@@ -1,8 +1,89 @@
 @import "tailwindcss";
 
+/* Modern Light Blue / Baby Blue Color Palette */
+/* :root {
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #f0f9ff;
+  --primary-border: #bae6fd;
+  --primary-focus: rgba(2, 132, 199, 0.2);
+  
+  --bg-page: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  
+  --error-bg: #fef2f2;
+  --error-text: #b91c1c;
+  --error-border: #fca5a5;
+
+  --success-bg: #f0fdf4;
+  --success-text: #15803d;
+  --success-border: #86efac;
+
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+} */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #8B5E3C;
+
+  /* Primary Hover - بني أغمق */
+  --primary-hover: #6F472D;
+
+  /* Primary Light - بني فاتح جدًا للخلفيات */
+  --primary-light: #F5EDE6;
+
+  /* Primary Border */
+  --primary-border: #D8BFA8;
+
+  /* Primary Focus */
+  --primary-focus: rgba(139, 94, 60, 0.2);
+
+
+  /* Page Background - أوف وايت دافئ */
+  --bg-page: #FAF7F3;
+
+  /* Cards */
+  --card-bg: #FFFFFF;
+
+
+  /* Main Text - فحمي دافئ بدل الأسود المزرق */
+  --text-main: #2C211A;
+
+  /* Secondary Text */
+  --text-muted: #806F62;
+
+  /* Borders */
+  --border-color: #E6DDD5;
+
+
+  /* Error */
+  --error-bg: #FEF2F2;
+  --error-text: #B42318;
+  --error-border: #FCA5A5;
+
+
+  /* Success - أخضر هادي متناسق */
+  --success-bg: #F1F8F3;
+  --success-text: #287A45;
+  --success-border: #9CC9A9;
+
+
+  /* Border Radius */
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+
+
+  /* Card Shadow - دافي بدل الأسود الصريح */
+  --shadow-card:
+    0 10px 25px -5px rgba(74, 47, 29, 0.08),
+    0 8px 10px -6px rgba(74, 47, 29, 0.04);
 }
 
 @theme inline {
@@ -20,7 +101,166 @@
 }
 
 body {
-  background: var(--background);
+  /* background: var(--background); */
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  direction: rtl;
+  text-align: right;
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Page container for Auth pages */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+/* Reusable Auth Card */
+.auth-card {
+  width: 100%;
+  width: 440px;
+  background-color: var(--card-bg);
+  /* border-radius: var(--radius-lg); */
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
+  padding: 2.25rem 2rem;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  /* background-color: var(--primary-light); */
+  color: var(--primary);
+  margin-bottom: 1.25rem;
+  box-shadow: inset 0 0 0 1px var(--primary-border);
+}
+
+.auth-title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.auth-description {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Form controls */
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background-color: #fff;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-focus);
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+.phone-input {
+  direction: ltr;
+  text-align: right;
+}
+
+/* Main Buttons */
+.btn-primary {
+  width: 100%;
+  height: 48px;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 0.5rem;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  width: 100%;
+  height: 44px;
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.925rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Overlay */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}
+
+/* Style for Star like it is required */
+.star-req {
+  color: var(--error-text);
+  margin-left: 0.2rem;
+  font-size: 1rem;
 }

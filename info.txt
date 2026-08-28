@@ -1,0 +1,7 @@
+// - routes
+/login
+/forgot-password
+/verify
+/reset-password
+
+// ----------------------------------------
