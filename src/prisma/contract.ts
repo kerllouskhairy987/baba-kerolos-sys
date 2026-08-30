@@ -7,6 +7,48 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       email: field.text().unique(),
       username: field.text().optional(),
       name: field.text().optional(),
+      passwordHash: field.text(),
+      passwordChangedAt: field.temporal.timestamptzString().optional(),
+      createdAt: field.temporal.createdAtString(),
+      updatedAt: field.temporal.updatedAtString(),
+    },
+  });
+
+  const Session = model('Session', {
+    fields: {
+      id: field.id.uuidv7String(),
+      tokenHash: field.text().unique(),
+      userId: field.uuidString(),
+      expiresAt: field.temporal.timestamptzString(),
+      revokedAt: field.temporal.timestamptzString().optional(),
+      createdAt: field.temporal.createdAtString(),
+      updatedAt: field.temporal.updatedAtString(),
+    },
+  });
+
+  const PasswordResetChallenge = model('PasswordResetChallenge', {
+    fields: {
+      id: field.id.uuidv7String(),
+      userId: field.uuidString(),
+      codeHash: field.text(),
+      resetTokenHash: field.text().unique().optional(),
+      attempts: field.int().default(0),
+      expiresAt: field.temporal.timestamptzString(),
+      resendAvailableAt: field.temporal.timestamptzString(),
+      verifiedAt: field.temporal.timestamptzString().optional(),
+      consumedAt: field.temporal.timestamptzString().optional(),
+      createdAt: field.temporal.createdAtString(),
+      updatedAt: field.temporal.updatedAtString(),
+    },
+  });
+
+  const AuthRateLimit = model('AuthRateLimit', {
+    fields: {
+      id: field.id.uuidv7String(),
+      key: field.text().unique(),
+      attempts: field.int().default(0),
+      windowStartedAt: field.temporal.timestamptzString(),
+      blockedUntil: field.temporal.timestamptzString().optional(),
       createdAt: field.temporal.createdAtString(),
       updatedAt: field.temporal.updatedAtString(),
     },
@@ -103,7 +145,16 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
     models: {
       User: User.relations({
         posts: rel.hasMany(Post, { by: 'authorId' }),
+        sessions: rel.hasMany(Session, { by: 'userId' }),
+        passwordResetChallenges: rel.hasMany(PasswordResetChallenge, { by: 'userId' }),
       }),
+      Session: Session.relations({
+        user: rel.belongsTo(User, { from: 'userId', to: 'id' }),
+      }),
+      PasswordResetChallenge: PasswordResetChallenge.relations({
+        user: rel.belongsTo(User, { from: 'userId', to: 'id' }),
+      }),
+      AuthRateLimit,
       Post: Post.relations({
         author: rel.belongsTo(User, { from: 'authorId', to: 'id' }),
       }),

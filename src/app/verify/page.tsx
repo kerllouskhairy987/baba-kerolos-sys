@@ -1,11 +1,18 @@
-import OtpCountdown from "@/components/OtpCountdown";
+'use client';
+
+import { useActionState, Suspense } from "react";
 import Image from "next/image";
-import { Suspense } from "react";
+import OtpCountdown from "@/components/OtpCountdown";
+import { verifyResetCodeAction, resendResetCodeAction, AuthActionResult } from "@/lib/actions/auth-actions";
 
 function VerifyForm() {
+    const [state, formAction, isPending] = useActionState<AuthActionResult | null, FormData>(
+        verifyResetCodeAction,
+        null
+    );
 
-    const handleResend = () => {
-
+    const handleResend = async () => {
+        return await resendResetCodeAction();
     };
 
     return (
@@ -24,45 +31,48 @@ function VerifyForm() {
                     </div>
                     <h1 className="auth-title">تأكيد رمز التحقق</h1>
                     <p className="auth-description">
-                        أدخل رمز التحقق المرسل إلى رقم هاتفك عبر واتساب.
+                        أدخل رمز التحقق المرسل إلى بريدك الإلكتروني.
                     </p>
                 </div>
 
-                {/* {error && <div className="alert-error">{error}</div>}
-        {successMsg && <div className="alert-success">{successMsg}</div>} */}
+                {state?.error && (
+                    <div className="alert-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.875rem' }}>
+                        {state.error}
+                    </div>
+                )}
 
-                <form>
+                <form action={formAction}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="otp">رمز التحقق</label>
                         <input
                             id="otp"
+                            name="otp"
                             type="text"
                             className="form-input otp-input"
                             placeholder="123456"
                             maxLength={6}
-                            //   value={otp}
-                            //   onChange={(e) => setOtp(e.target.value)}
-                            //   disabled={loading}
+                            disabled={isPending}
                             required
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary" disabled={false}>
-                        {false ? 'جاري التأكيد...' : 'تأكيد الرمز'}
+                    <button type="submit" className="btn-primary" disabled={isPending}>
+                        {isPending ? 'جاري التأكيد...' : 'تأكيد الرمز'}
                     </button>
                 </form>
 
-                <OtpCountdown />
+                <OtpCountdown onResend={handleResend} />
             </div>
         </div>
     );
 }
+
 const VerifyPage = () => {
     return (
         <Suspense fallback={<div className="auth-container"><div className="auth-card">جاري التحميل...</div></div>}>
             <VerifyForm />
         </Suspense>
-    )
+    );
 }
 
-export default VerifyPage
+export default VerifyPage;

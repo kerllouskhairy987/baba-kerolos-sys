@@ -1,7 +1,19 @@
+'use client';
+
+import { useActionState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { loginAction, AuthActionResult } from '@/lib/actions/auth-actions';
 
 const LoginPage = () => {
+    const [state, formAction, isPending] = useActionState<AuthActionResult | null, FormData>(
+        loginAction,
+        null
+    );
+    const searchParams = useSearchParams();
+    const resetSuccess = searchParams.get('reset') === 'success';
+
     return (
         <div className="auth-container">
             {/* overlay */}
@@ -9,7 +21,7 @@ const LoginPage = () => {
             <Image src="/2.jpg" alt="image" fill className='absolute top-0 right-0' style={{ zIndex: -10 }} />
             
             <div className='flex rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-800'>
-                <div className="auth-card  z-[10]">
+                <div className="auth-card z-[10]">
                     <div className="auth-header">
                         <div className="auth-brand">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -21,9 +33,15 @@ const LoginPage = () => {
                         <p className="auth-description">مرحباً بك، يرجى إدخال بيانات حسابك للمتابعة</p>
                     </div>
 
-                    {/* {error && <div className="alert-error">{error}</div>} */}
+                    {resetSuccess && (
+                        <div className="alert-success" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#d1fae5', color: '#065f46', fontSize: '0.875rem' }}>
+                            تم تغيير كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.
+                        </div>
+                    )}
 
-                    <form >
+                    {state?.error && <div className="alert-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.875rem' }}>{state.error}</div>}
+
+                    <form action={formAction}>
                         <div className="form-group">
                             <div className="flex items-center">
                                 <label className="form-label" htmlFor="email">البريد الإلكتروني</label>
@@ -31,13 +49,12 @@ const LoginPage = () => {
                             </div>
                             <input
                                 id="email"
+                                name="email"
                                 type="email"
                                 className="form-input phone-input"
                                 placeholder="example@email.com"
                                 autoFocus
-                                // value={phone}
-                                // onChange={(e) => setPhone(e.target.value)}
-                                // disabled={loading}
+                                disabled={isPending}
                                 required
                             />
                         </div>
@@ -49,12 +66,11 @@ const LoginPage = () => {
                             </div>
                             <input
                                 id="password"
+                                name="password"
                                 type="password"
                                 className="form-input"
                                 placeholder="••••••••"
-                                // value={password}
-                                // onChange={(e) => setPassword(e.target.value)}
-                                // disabled={loading}
+                                disabled={isPending}
                                 required
                             />
                         </div>
@@ -68,9 +84,9 @@ const LoginPage = () => {
                         <button
                             type="submit"
                             className="btn-primary"
-                            disabled={false}
+                            disabled={isPending}
                         >
-                            {false ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+                            {isPending ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
                         </button>
                     </form>
                 </div>
@@ -80,4 +96,4 @@ const LoginPage = () => {
     );
 }
 
-export default LoginPage
+export default LoginPage;

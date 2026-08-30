@@ -1,8 +1,16 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import React from 'react'
+'use client';
+
+import { useActionState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { requestPasswordResetAction, AuthActionResult } from '@/lib/actions/auth-actions';
 
 const ForgotPasswordPage = () => {
+    const [state, formAction, isPending] = useActionState<AuthActionResult | null, FormData>(
+        requestPasswordResetAction,
+        null
+    );
+
     return (
         <div className="auth-container">
             {/* overlay */}
@@ -18,13 +26,17 @@ const ForgotPasswordPage = () => {
                     </div>
                     <h1 className="auth-title">استعادة كلمة المرور</h1>
                     <p className="auth-description">
-                        أدخل البريد الإلكتروني المرتبط بحسابك لإرسال رمز التحقق عبر واتساب.
+                        أدخل البريد الإلكتروني المرتبط بحسابك لإرسال رمز التحقق عبر البريد الإلكتروني.
                     </p>
                 </div>
 
-                {/* {error && <div className="alert-error">{error}</div>} */}
+                {state?.error && (
+                    <div className="alert-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.875rem' }}>
+                        {state.error}
+                    </div>
+                )}
 
-                <form >
+                <form action={formAction}>
                     <div className="form-group">
                         <div className="flex items-center">
                             <label className="form-label" htmlFor="email">البريد الإلكتروني</label>
@@ -32,19 +44,18 @@ const ForgotPasswordPage = () => {
                         </div>
                         <input
                             id="email"
+                            name="email"
                             type="email"
                             className="form-input phone-input"
                             placeholder="example@email.com"
                             autoFocus
-                            //   value={phone}
-                            //   onChange={(e) => setPhone(e.target.value)}
-                            //   disabled={loading}
+                            disabled={isPending}
                             required
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary" disabled={false}>
-                        {false ? 'جاري الإرسال...' : 'إرسال رمز التحقق'}
+                    <button type="submit" className="btn-primary" disabled={isPending}>
+                        {isPending ? 'جاري الإرسال...' : 'إرسال رمز التحقق'}
                     </button>
                 </form>
 
@@ -55,7 +66,7 @@ const ForgotPasswordPage = () => {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default ForgotPasswordPage
+export default ForgotPasswordPage;

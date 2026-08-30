@@ -1,7 +1,15 @@
+'use client';
+
 import Image from 'next/image';
-import React, { Suspense } from 'react'
+import React, { useActionState, Suspense } from 'react';
+import { resetPasswordAction, AuthActionResult } from '@/lib/actions/auth-actions';
 
 function ResetPasswordForm() {
+    const [state, formAction, isPending] = useActionState<AuthActionResult | null, FormData>(
+        resetPasswordAction,
+        null
+    );
+
     return (
         <div className="auth-container">
             <div className="auth-card rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-800">
@@ -17,28 +25,26 @@ function ResetPasswordForm() {
                     </p>
                 </div>
 
-                {/* {error && <div className="alert-error">{error}</div>}
-        {success && (
-          <div className="alert-success">
-            تم تغيير كلمة المرور بنجاح! جاري تحويلك لتسجيل الدخول...
-          </div>
-        )} */}
+                {state?.error && (
+                    <div className="alert-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '0.875rem' }}>
+                        {state.error}
+                    </div>
+                )}
 
-                <form >
+                <form action={formAction}>
                     <div className="form-group">
                         <div className="flex items-center">
-                        <label className="form-label" htmlFor="password">كلمة المرور الجديدة</label>
-                        <span className='star-req'>*</span>
+                            <label className="form-label" htmlFor="password">كلمة المرور الجديدة</label>
+                            <span className='star-req'>*</span>
                         </div>
                         <input
                             id="password"
+                            name="password"
                             type="password"
                             className="form-input"
                             placeholder="••••••••"
                             autoFocus
-                            //   value={password}
-                            //   onChange={(e) => setPassword(e.target.value)}
-                            //   disabled={loading || success}
+                            disabled={isPending}
                             required
                         />
                     </div>
@@ -50,24 +56,24 @@ function ResetPasswordForm() {
                         </div>
                         <input
                             id="confirmPassword"
+                            name="confirmPassword"
                             type="password"
                             className="form-input"
                             placeholder="••••••••"
-                            //   value={confirmPassword}
-                            //   onChange={(e) => setConfirmPassword(e.target.value)}
-                            disabled={false || false}
+                            disabled={isPending}
                             required
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary" disabled={false || false}>
-                        {false ? 'جاري التحديث...' : 'تغيير كلمة المرور'}
+                    <button type="submit" className="btn-primary" disabled={isPending}>
+                        {isPending ? 'جاري التحديث...' : 'تغيير كلمة المرور'}
                     </button>
                 </form>
             </div>
         </div>
     );
 }
+
 const ResetPasswordPage = () => {
     return (
         <>
@@ -82,4 +88,4 @@ const ResetPasswordPage = () => {
     );
 }
 
-export default ResetPasswordPage
+export default ResetPasswordPage;

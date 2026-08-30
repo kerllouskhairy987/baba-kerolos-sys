@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { logoutAction } from "@/lib/actions/auth-actions";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +40,15 @@ export default function Navbar() {
                                 {link.label}
                             </Link>
                         ))}
+
+                        <form action={logoutAction}>
+                            <button
+                                type="submit"
+                                className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 cursor-pointer"
+                            >
+                                تسجيل الخروج
+                            </button>
+                        </form>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -121,6 +131,15 @@ export default function Navbar() {
                             {link.label}
                         </Link>
                     ))}
+
+                    <form action={logoutAction} className="mt-4 pt-4 border-t border-[var(--border-color)]">
+                        <button
+                            type="submit"
+                            className="w-full text-right rounded-[var(--radius-md)] px-4 py-3 text-base font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                        >
+                            تسجيل الخروج
+                        </button>
+                    </form>
                 </div>
             </aside>
         </>
