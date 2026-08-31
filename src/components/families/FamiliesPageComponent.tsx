@@ -1,91 +1,78 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-
-type Family = {
-    id: string;
-    name: string;
-    address: string;
-    membershipDate: string;
-};
-
-const initialFamilies: Family[] = [
-    {
-        id: "1",
-        name: "عائلة كيرلس",
-        address: "خورشيد - الإسكندرية",
-        membershipDate: "2020-05-15",
-    },
-    {
-        id: "2",
-        name: "عائلة مينا",
-        address: "سيدي بشر - الإسكندرية",
-        membershipDate: "2019-08-20",
-    },
-    {
-        id: "3",
-        name: "عائلة مارجرجس",
-        address: "عثمان محرم - البحيرة",
-        membershipDate: "2021-01-10",
-    },
-];
+import { useCallback, useEffect, useState } from "react";
+import {
+    archiveFamily,
+    createFamily,
+    FamilyData,
+    getFamilies,
+    updateFamily,
+} from "@/lib/families/families";
 
 export default function FamiliesPage() {
-    const [families, setFamilies] = useState<Family[]>(initialFamilies);
+    const [viewMode, setViewMode] = useState<"active" | "archived">("active");
+    const [families, setFamilies] = useState<FamilyData[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const [search, setSearch] = useState("");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingFamily, setEditingFamily] = useState<FamilyData | null>(null);
 
     const [familyName, setFamilyName] = useState("");
-
     const [familyAddress, setFamilyAddress] = useState("");
-
     const [membershipDate, setMembershipDate] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     /*
       |--------------------------------------------------------------------------
-      | Filter Families
+      | Fetch Families
       |--------------------------------------------------------------------------
       */
-
-    const filteredFamilies = useMemo(() => {
-        const value = search.trim().toLowerCase();
-
-        if (!value) {
-            return families;
+    const loadFamilies = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await getFamilies({
+                isArchived: viewMode === "archived",
+                search,
+            });
+            setFamilies(data);
+        } catch (error) {
+            console.error("Error loading families:", error);
+        } finally {
+            setLoading(false);
         }
+    }, [viewMode, search]);
 
-        return families.filter((family) =>
-            family.name.toLowerCase().includes(value),
-        );
-    }, [families, search]);
+    useEffect(() => {
+        loadFamilies();
+    }, [loadFamilies]);
 
     /*
       |--------------------------------------------------------------------------
-      | Add Family
+      | Open Add Modal
       |--------------------------------------------------------------------------
       */
+    const handleOpenAddModal = () => {
+        setEditingFamily(null);
+        setFamilyName("");
+        setFamilyAddress("");
+        setMembershipDate("");
+        setIsModalOpen(true);
+    };
 
-    const handleAddFamily = () => {
-        const name = familyName.trim();
-        const address = familyAddress.trim();
-
-        if (!name || !address || !membershipDate) {
-            return;
-        }
-
-        const newFamily: Family = {
-            id: crypto.randomUUID(),
-            name,
-            address,
-            membershipDate,
-        };
-
-        setFamilies((prev) => [...prev, newFamily]);
-
-        handleCloseModal();
+    /*
+      |--------------------------------------------------------------------------
+      | Open Edit Modal
+      |--------------------------------------------------------------------------
+      */
+    const handleOpenEditModal = (family: FamilyData) => {
+        setEditingFamily(family);
+        setFamilyName(family.name);
+        setFamilyAddress(family.address);
+        setMembershipDate(family.membershipDate);
+        setIsModalOpen(true);
     };
 
     /*
@@ -93,8 +80,8 @@ export default function FamiliesPage() {
       | Close Modal
       |--------------------------------------------------------------------------
       */
-
     const handleCloseModal = () => {
+        setEditingFamily(null);
         setFamilyName("");
         setFamilyAddress("");
         setMembershipDate("");
@@ -103,15 +90,65 @@ export default function FamiliesPage() {
 
     /*
       |--------------------------------------------------------------------------
+      | Save Family (Add or Edit)
+      |--------------------------------------------------------------------------
+      */
+    const handleSaveFamily = async () => {
+        const name = familyName.trim();
+        const address = familyAddress.trim();
+
+        if (!name || !address || !membershipDate || isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            if (editingFamily) {
+                await updateFamily(editingFamily.id, {
+                    name,
+                    address,
+                    membershipDate,
+                });
+            } else {
+                await createFamily({
+                    name,
+                    address,
+                    membershipDate,
+                });
+            }
+
+            handleCloseModal();
+            await loadFamilies();
+        } catch (error) {
+            console.error("Error saving family:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    /*
+      |--------------------------------------------------------------------------
+      | Archive Family
+      |--------------------------------------------------------------------------
+      */
+    const handleArchiveFamily = async (id: string) => {
+        try {
+            await archiveFamily(id);
+            await loadFamilies();
+        } catch (error) {
+            console.error("Error archiving family:", error);
+        }
+    };
+
+    /*
+      |--------------------------------------------------------------------------
       | Format Date
       |--------------------------------------------------------------------------
       */
-
     const formatDate = (date: string) => {
         if (!date) return "-";
-
         const [year, month, day] = date.split("-");
-
+        if (!year || !month || !day) return date;
         return `${day}/${month}/${year}`;
     };
 
@@ -144,7 +181,6 @@ export default function FamiliesPage() {
             "
                     >
                         {/* Title */}
-
                         <div>
                             <div className="mb-2 flex items-center gap-2">
                                 <div
@@ -197,48 +233,73 @@ export default function FamiliesPage() {
                             </p>
                         </div>
 
-                        {/* Add Button */}
-
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(true)}
-                            className="
-                inline-flex
-                items-center
-                justify-center
-                gap-2
-                rounded-[var(--radius-md)]
-                bg-[var(--primary)]
-                px-5
-                py-3
-                text-sm
-                font-semibold
-                text-white
-                shadow-sm
-                transition-all
-                hover:-translate-y-0.5
-                hover:bg-[var(--primary-hover)]
-                focus:outline-none
-                focus:ring-4
-                focus:ring-[var(--primary-focus)]
-              "
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="h-5 w-5"
+                        {/* View Filter Switch & Add Button */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("active")}
+                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
+                                    viewMode === "active"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                }`}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M12 4.5v15m7.5-7.5h-15"
-                                />
-                            </svg>
-                            إضافة عيلة
-                        </button>
+                                العائلات النشطة
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("archived")}
+                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
+                                    viewMode === "archived"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                }`}
+                            >
+                                عرض العائلات المحذوفة
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleOpenAddModal}
+                                className="
+                    inline-flex
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-[var(--radius-md)]
+                    bg-[var(--primary)]
+                    px-5
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-white
+                    shadow-sm
+                    transition-all
+                    hover:-translate-y-0.5
+                    hover:bg-[var(--primary-hover)]
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-[var(--primary-focus)]
+                  "
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="h-5 w-5"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 4.5v15m7.5-7.5h-15"
+                                    />
+                                </svg>
+                                إضافة عيلة
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -272,7 +333,6 @@ export default function FamiliesPage() {
 
                     <div className="relative">
                         {/* Search Icon */}
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -340,7 +400,6 @@ export default function FamiliesPage() {
           "
                 >
                     {/* Table Header */}
-
                     <div
                         className="
               flex
@@ -364,7 +423,7 @@ export default function FamiliesPage() {
                   text-[var(--text-main)]
                 "
                             >
-                                قائمة العائلات
+                                {viewMode === "active" ? "قائمة العائلات النشطة" : "قائمة العائلات المحذوفة"}
                             </h2>
 
                             <p
@@ -374,13 +433,12 @@ export default function FamiliesPage() {
                   text-[var(--text-muted)]
                 "
                             >
-                                عدد العائلات: {filteredFamilies.length}
+                                عدد العائلات: {families.length}
                             </p>
                         </div>
                     </div>
 
                     {/* Table */}
-
                     <div className="overflow-x-auto">
                         <table
                             className="
@@ -455,7 +513,7 @@ export default function FamiliesPage() {
                   divide-[var(--border-color)]
                 "
                             >
-                                {filteredFamilies.map((family) => (
+                                {families.map((family) => (
                                     <tr
                                         key={family.id}
                                         className="
@@ -464,7 +522,6 @@ export default function FamiliesPage() {
                       "
                                     >
                                         {/* Name */}
-
                                         <td className="px-6 py-5">
                                             <div
                                                 className="
@@ -502,7 +559,6 @@ export default function FamiliesPage() {
                                         </td>
 
                                         {/* Membership Date */}
-
                                         <td
                                             className="
                           px-6
@@ -515,7 +571,6 @@ export default function FamiliesPage() {
                                         </td>
 
                                         {/* Address */}
-
                                         <td
                                             className="
                           px-6
@@ -528,44 +583,136 @@ export default function FamiliesPage() {
                                         </td>
 
                                         {/* Actions */}
-
                                         <td className="px-6 py-5">
-                                            <Link
-                                                href={`/families/${family.id}`}
-                                                className="
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {/* View Family Button */}
+                                                {family.isArchived ? (
+                                                    <button
+                                                        type="button"
+                                                        disabled
+                                                        className="
+                                flex
+                                items-center
+                                gap-2
+                                rounded-[var(--radius-sm)]
+                                border
+                                border-[var(--border-color)]
+                                bg-[var(--bg-page)]
+                                px-4
+                                py-2
+                                text-sm
+                                font-semibold
+                                text-[var(--text-muted)]
+                                opacity-50
+                                cursor-not-allowed
+                              "
+                                                    >
+                                                        عرض العيلة
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={2}
+                                                            stroke="currentColor"
+                                                            className="h-4 w-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                ) : (
+                                                    <Link
+                                                        href={`/families/${family.id}`}
+                                                        className="
+                                inline-flex
+                                items-center
+                                gap-2
+                                rounded-[var(--radius-sm)]
+                                border
+                                border-[var(--primary-border)]
+                                bg-[var(--primary-light)]
+                                px-4
+                                py-2
+                                text-sm
+                                font-semibold
+                                text-[var(--primary)]
+                                transition-all
+                                hover:bg-[var(--primary)]
+                                hover:text-white
+                              "
+                                                    >
+                                                        عرض العيلة
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={2}
+                                                            stroke="currentColor"
+                                                            className="h-4 w-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                            />
+                                                        </svg>
+                                                    </Link>
+                                                )}
+
+                                                {/* Edit Button */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleOpenEditModal(family)}
+                                                    className="
                             inline-flex
                             items-center
-                            gap-2
+                            gap-1.5
                             rounded-[var(--radius-sm)]
                             border
-                            border-[var(--primary-border)]
-                            bg-[var(--primary-light)]
+                            border-[var(--border-color)]
+                            bg-[var(--card-bg)]
                             px-4
                             py-2
                             text-sm
                             font-semibold
-                            text-[var(--primary)]
+                            text-[var(--text-main)]
                             transition-all
-                            hover:bg-[var(--primary)]
-                            hover:text-white
+                            hover:bg-[var(--primary-light)]
+                            hover:text-[var(--primary)]
                           "
-                                            >
-                                                عرض العيلة
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    className="h-4 w-4"
                                                 >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                                                    />
-                                                </svg>
-                                            </Link>
+                                                    تعديل
+                                                </button>
+
+                                                {/* Archive Button */}
+                                                {!family.isArchived && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleArchiveFamily(family.id)}
+                                                        className="
+                              inline-flex
+                              items-center
+                              gap-1.5
+                              rounded-[var(--radius-sm)]
+                              border
+                              border-amber-200
+                              bg-amber-50
+                              px-4
+                              py-2
+                              text-sm
+                              font-semibold
+                              text-amber-700
+                              transition-all
+                              hover:bg-amber-100
+                            "
+                                                    >
+                                                        إضافة للأرشيف
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -573,8 +720,7 @@ export default function FamiliesPage() {
                         </table>
 
                         {/* Empty State */}
-
-                        {filteredFamilies.length === 0 && (
+                        {!loading && families.length === 0 && (
                             <div
                                 className="
                   flex
@@ -631,7 +777,9 @@ export default function FamiliesPage() {
                     text-[var(--text-muted)]
                   "
                                 >
-                                    لم يتم العثور على عيلة بهذا الاسم
+                                    {viewMode === "archived"
+                                        ? "لا توجد عائلات مؤرشفة"
+                                        : "لم يتم العثور على عيلة بهذا الاسم"}
                                 </p>
                             </div>
                         )}
@@ -640,7 +788,7 @@ export default function FamiliesPage() {
             </div>
 
             {/* =========================================================
-          ADD FAMILY MODAL
+          ADD / EDIT FAMILY MODAL
       ========================================================== */}
 
             {isModalOpen && (
@@ -673,7 +821,6 @@ export default function FamiliesPage() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-
                         <div
                             className="
                 flex
@@ -693,7 +840,7 @@ export default function FamiliesPage() {
                     text-[var(--text-main)]
                   "
                                 >
-                                    إضافة عيلة
+                                    {editingFamily ? "تعديل بيانات العيلة" : "إضافة عيلة"}
                                 </h2>
 
                                 <p
@@ -703,12 +850,13 @@ export default function FamiliesPage() {
                     text-[var(--text-muted)]
                   "
                                 >
-                                    أضف بيانات العيلة الأساسية
+                                    {editingFamily
+                                        ? "تعديل البيانات الأساسية للعيلة"
+                                        : "أضف بيانات العيلة الأساسية"}
                                 </p>
                             </div>
 
                             {/* Close */}
-
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
@@ -732,10 +880,8 @@ export default function FamiliesPage() {
                         </div>
 
                         {/* Modal Body */}
-
                         <div className="space-y-5 px-6 py-6">
                             {/* Family Name */}
-
                             <div>
                                 <label
                                     htmlFor="modal-family-name"
@@ -778,7 +924,6 @@ export default function FamiliesPage() {
                             </div>
 
                             {/* Address */}
-
                             <div>
                                 <label
                                     htmlFor="modal-family-address"
@@ -820,7 +965,6 @@ export default function FamiliesPage() {
                             </div>
 
                             {/* Membership Date */}
-
                             <div>
                                 <label
                                     htmlFor="modal-membership-date"
@@ -861,7 +1005,6 @@ export default function FamiliesPage() {
                         </div>
 
                         {/* Modal Footer */}
-
                         <div
                             className="
                 flex
@@ -874,7 +1017,6 @@ export default function FamiliesPage() {
               "
                         >
                             {/* Cancel */}
-
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
@@ -897,12 +1039,14 @@ export default function FamiliesPage() {
                             </button>
 
                             {/* Save */}
-
                             <button
                                 type="button"
-                                onClick={handleAddFamily}
+                                onClick={handleSaveFamily}
                                 disabled={
-                                    !familyName.trim() || !familyAddress.trim() || !membershipDate
+                                    !familyName.trim() ||
+                                    !familyAddress.trim() ||
+                                    !membershipDate ||
+                                    isSubmitting
                                 }
                                 className="
                   flex-1
@@ -922,7 +1066,7 @@ export default function FamiliesPage() {
                   disabled:opacity-50
                 "
                             >
-                                حفظ
+                                {isSubmitting ? "جاري الحفظ..." : "حفظ"}
                             </button>
                         </div>
                     </div>

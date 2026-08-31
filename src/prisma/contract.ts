@@ -75,6 +75,7 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       name: field.text(),
       address: field.text(),
       membershipDate: field.text(),
+      isArchived: field.boolean().default(false),
       createdAt: field.temporal.createdAtString(),
       updatedAt: field.temporal.updatedAtString(),
     },
@@ -98,6 +99,7 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       relation: field.text(),
       isHead: field.boolean().default(false),
       familyId: field.uuidString(),
+      isArchived: field.boolean().default(false),
       createdAt: field.temporal.createdAtString(),
       updatedAt: field.temporal.updatedAtString(),
     },
@@ -113,6 +115,7 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       name: field.text(),
       address: field.text(),
       serviceStartDate: field.text(),
+      isArchived: field.boolean().default(false),
       createdAt: field.temporal.createdAtString(),
       updatedAt: field.temporal.updatedAtString(),
     },
@@ -133,6 +136,46 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       relation: field.text(),
       isHead: field.boolean().default(false),
       servantId: field.uuidString(),
+      isArchived: field.boolean().default(false),
+      createdAt: field.temporal.createdAtString(),
+      updatedAt: field.temporal.updatedAtString(),
+    },
+  });
+
+  // =========================================================
+  // Priest
+  // =========================================================
+  const Priest = model('Priest', {
+    fields: {
+      id: field.id.uuidv7String(),
+      name: field.text(),
+      nationalId: field.text().unique(),
+      ordinationDate: field.text(),
+      archpriestDate: field.text().optional(),
+      deathDate: field.text().optional(),
+      address: field.text(),
+      isArchived: field.boolean().default(false),
+      createdAt: field.temporal.createdAtString(),
+      updatedAt: field.temporal.updatedAtString(),
+    },
+  });
+
+  // =========================================================
+  // Priest Member
+  // =========================================================
+  const PriestMember = model('PriestMember', {
+    fields: {
+      id: field.id.uuidv7String(),
+      name: field.text(),
+      phone: field.text().optional(),
+      nationalId: field.text().unique(),
+      education: field.text(),
+      job: field.text().optional(),
+      income: field.decimal().optional(),
+      relation: field.text(),
+      isHead: field.boolean().default(false),
+      priestId: field.uuidString(),
+      isArchived: field.boolean().default(false),
       createdAt: field.temporal.createdAtString(),
       updatedAt: field.temporal.updatedAtString(),
     },
@@ -198,6 +241,25 @@ export const contract = defineContract({}, ({ field, model, rel }) => {
       ServantMember: ServantMember.relations({
         servant: rel.belongsTo(Servant, {
           from: 'servantId',
+          to: 'id',
+        }),
+      }),
+
+      // -------------------------------------------------------
+      // Priest
+      // -------------------------------------------------------
+      Priest: Priest.relations({
+        members: rel.hasMany(PriestMember, {
+          by: 'priestId',
+        }),
+      }),
+
+      // -------------------------------------------------------
+      // Priest Member
+      // -------------------------------------------------------
+      PriestMember: PriestMember.relations({
+        priest: rel.belongsTo(Priest, {
+          from: 'priestId',
           to: 'id',
         }),
       }),

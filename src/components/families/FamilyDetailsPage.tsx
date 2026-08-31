@@ -1,9 +1,19 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import {
+    archiveFamilyMember,
+    checkFamilyMemberNationalIdExists,
+    createFamilyMember,
+    FamilyData,
+    FamilyMemberData,
+    getFamilyById,
+    getFamilyMembers,
+    updateFamilyMember,
+} from "@/lib/families/families";
 
 type Education =
     | "حضانة"
@@ -16,26 +26,6 @@ type Education =
     | "ليس لديه";
 
 type Relation = "أب" | "أم" | "ابن" | "ابنة";
-
-type FamilyMember = {
-    id: string;
-    name: string;
-    phone: string;
-    nationalId: string;
-    education: Education;
-    job: string;
-    income: string;
-    relation: Relation;
-    isHead: boolean;
-};
-
-type Family = {
-    id: string;
-    name: string;
-    membershipDate: string;
-    address: string;
-    members: FamilyMember[];
-};
 
 const educationOptions: Education[] = [
     "حضانة",
@@ -54,66 +44,6 @@ const relationOptions: Relation[] = [
     "ابن",
     "ابنة",
 ];
-
-/*
-|--------------------------------------------------------------------------
-| بيانات مؤقتة
-|--------------------------------------------------------------------------
-| بعد توصيل Prisma هنجيب الـ Family والـ Members من Database
-*/
-const initialFamily: Family = {
-    id: "1",
-    name: "عائلة كيرلس",
-    membershipDate: "2018/05/12",
-    address: "الإسكندرية - خورشيد",
-
-    members: [
-        {
-            id: "1",
-            name: "كيرلس مينا",
-            phone: "01000000000",
-            nationalId: "29505151234567",
-            education: "جامعة",
-            job: "مهندس",
-            income: "15000",
-            relation: "أب",
-            isHead: true,
-        },
-        {
-            id: "2",
-            name: "مريم جرجس",
-            phone: "01111111111",
-            nationalId: "29808221234567",
-            education: "جامعة",
-            job: "مدرسة",
-            income: "9000",
-            relation: "أم",
-            isHead: false,
-        },
-        {
-            id: "3",
-            name: "مينا كيرلس",
-            phone: "01222222222",
-            nationalId: "32001151234567",
-            education: "ابتدائي",
-            job: "طالب",
-            income: "0",
-            relation: "ابن",
-            isHead: false,
-        },
-        {
-            id: "4",
-            name: "مارينا كيرلس",
-            phone: "01555555555",
-            nationalId: "31507231234567",
-            education: "إعدادي",
-            job: "طالبة",
-            income: "0",
-            relation: "ابنة",
-            isHead: false,
-        },
-    ],
-};
 
 /*
 |--------------------------------------------------------------------------
@@ -157,17 +87,25 @@ function getBirthDateFromNationalId(nationalId: string) {
     )}/${year}`;
 }
 
-export default function FamilyDetailsPage() {
-    const [family, setFamily] = useState<Family>(initialFamily);
+type FamilyDetailsPageProps = {
+    familyId?: string;
+};
+
+export default function FamilyDetailsPage({ familyId = "1" }: FamilyDetailsPageProps) {
+    const [family, setFamily] = useState<FamilyData | null>(null);
+    const [members, setMembers] = useState<FamilyMemberData[]>([]);
+    const [loadingFamily, setLoadingFamily] = useState<boolean>(true);
+    const [loadingMembers, setLoadingMembers] = useState<boolean>(true);
+
+    const [memberViewMode, setMemberViewMode] = useState<"active" | "archived">("active");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingMember, setEditingMember] = useState<FamilyMemberData | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [searchName, setSearchName] = useState("");
     const [searchNationalId, setSearchNationalId] = useState("");
-
-    const [educationFilter, setEducationFilter] = useState<
-        Education | ""
-    >("");
+    const [educationFilter, setEducationFilter] = useState<Education | "">("");
 
     const [form, setForm] = useState({
         name: "",
@@ -184,42 +122,98 @@ export default function FamilyDetailsPage() {
 
     /*
     |--------------------------------------------------------------------------
-    | رب الأسرة
+    | Load Family Details & Members
     |--------------------------------------------------------------------------
     */
-    const familyHead = family.members.find((member) => member.isHead);
+    const loadFamilyData = useCallback(async () => {
+        if (!familyId) return;
+        setLoadingFamily(true);
+        try {
+            const data = await getFamilyById(familyId);
+            setFamily(data);
+        } catch (error) {
+            console.error("Error loading family:", error);
+        } finally {
+            setLoadingFamily(false);
+        }
+    }, [familyId]);
+
+    const loadMembersData = useCallback(async () => {
+        if (!familyId) return;
+        setLoadingMembers(true);
+        try {
+            const data = await getFamilyMembers({
+                familyId,
+                isArchived: memberViewMode === "archived",
+                searchName,
+                searchNationalId,
+                educationFilter,
+            });
+            setMembers(data);
+        } catch (error) {
+            console.error("Error loading family members:", error);
+        } finally {
+            setLoadingMembers(false);
+        }
+    }, [familyId, memberViewMode, searchName, searchNationalId, educationFilter]);
+
+    useEffect(() => {
+        loadFamilyData();
+    }, [loadFamilyData]);
+
+    useEffect(() => {
+        loadMembersData();
+    }, [loadMembersData]);
 
     /*
     |--------------------------------------------------------------------------
-    | البحث والفلترة
+    | رب الأسرة
     |--------------------------------------------------------------------------
     */
-    const filteredMembers = useMemo(() => {
-        return family.members.filter((member) => {
-            const matchesName = member.name
-                .toLowerCase()
-                .includes(searchName.toLowerCase());
+    const familyHead = useMemo(() => {
+        return members.find((member) => member.isHead);
+    }, [members]);
 
-            const matchesNationalId = member.nationalId.includes(
-                searchNationalId
-            );
+    const [isDuplicateNationalId, setIsDuplicateNationalId] = useState(false);
 
-            const matchesEducation =
-                educationFilter === "" ||
-                member.education === educationFilter;
+    useEffect(() => {
+        const trimmedNationalId = form.nationalId.trim();
+        if (trimmedNationalId.length === 14) {
+            let active = true;
+            checkFamilyMemberNationalIdExists(trimmedNationalId, editingMember?.id)
+                .then((exists) => {
+                    if (active) {
+                        setIsDuplicateNationalId(exists);
+                    }
+                })
+                .catch(() => {
+                    if (active) {
+                        setIsDuplicateNationalId(false);
+                    }
+                });
+            return () => {
+                active = false;
+            };
+        } else {
+            setIsDuplicateNationalId(false);
+        }
+    }, [form.nationalId, editingMember?.id]);
 
-            return (
-                matchesName &&
-                matchesNationalId &&
-                matchesEducation
-            );
-        });
-    }, [
-        family.members,
-        searchName,
-        searchNationalId,
-        educationFilter,
-    ]);
+    const phoneError =
+        form.phone.trim() !== "" && form.phone.trim().length !== 11
+            ? "رقم الموبايل يجب أن يتكون من 11 رقم"
+            : "";
+
+    const nationalIdError = useMemo(() => {
+        const trimmed = form.nationalId.trim();
+        if (trimmed !== "" && trimmed.length !== 14) {
+            return "الرقم القومي يجب أن يتكون من 14 رقم";
+        }
+        if (trimmed.length === 14 && isDuplicateNationalId) {
+            return "الرقم القومي موجود بالفعل";
+        }
+        return "";
+    }, [form.nationalId, isDuplicateNationalId]);
 
     /*
     |--------------------------------------------------------------------------
@@ -230,63 +224,27 @@ export default function FamilyDetailsPage() {
         field: keyof typeof form,
         value: string | boolean
     ) => {
+        let cleanedValue = value;
+        if (typeof value === "string") {
+            if (field === "phone") {
+                cleanedValue = value.replace(/\D/g, "").slice(0, 11);
+            } else if (field === "nationalId") {
+                cleanedValue = value.replace(/\D/g, "").slice(0, 14);
+            }
+        }
         setForm((prev) => ({
             ...prev,
-            [field]: value,
+            [field]: cleanedValue,
         }));
     };
 
     /*
     |--------------------------------------------------------------------------
-    | إضافة فرد
+    | Open Add Member Modal
     |--------------------------------------------------------------------------
     */
-    const handleAddMember = () => {
-        if (
-            !form.name.trim() ||
-            !form.phone.trim() ||
-            !form.nationalId.trim() ||
-            !form.education ||
-            !form.relation
-        ) {
-            return;
-        }
-
-        /*
-         * لو الشخص الجديد رب الأسرة
-         * نشيل الصفة من رب الأسرة القديم
-         */
-        const updatedMembers = family.members.map((member) => ({
-            ...member,
-            isHead: form.isHead ? false : member.isHead,
-        }));
-
-        const newMember: FamilyMember = {
-            id: crypto.randomUUID(),
-            name: form.name.trim(),
-            phone: form.phone.trim(),
-            nationalId: form.nationalId.trim(),
-            education: form.education,
-            job: form.job.trim(),
-            income: form.income.trim(),
-            relation: form.relation,
-            isHead: form.isHead,
-        };
-
-        setFamily({
-            ...family,
-            members: [...updatedMembers, newMember],
-        });
-
-        resetForm();
-    };
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reset Form
-    |--------------------------------------------------------------------------
-    */
-    const resetForm = () => {
+    const handleOpenAddModal = () => {
+        setEditingMember(null);
         setForm({
             name: "",
             phone: "",
@@ -297,8 +255,111 @@ export default function FamilyDetailsPage() {
             relation: "",
             isHead: false,
         });
+        setIsModalOpen(true);
+    };
 
+    /*
+    |--------------------------------------------------------------------------
+    | Open Edit Member Modal
+    |--------------------------------------------------------------------------
+    */
+    const handleOpenEditModal = (member: FamilyMemberData) => {
+        setEditingMember(member);
+        setForm({
+            name: member.name,
+            phone: member.phone || "",
+            nationalId: member.nationalId,
+            education: (member.education as Education) || "",
+            job: member.job || "",
+            income: member.income || "",
+            relation: (member.relation as Relation) || "",
+            isHead: member.isHead,
+        });
+        setIsModalOpen(true);
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset / Close Form Modal
+    |--------------------------------------------------------------------------
+    */
+    const resetForm = () => {
+        setEditingMember(null);
+        setForm({
+            name: "",
+            phone: "",
+            nationalId: "",
+            education: "",
+            job: "",
+            income: "",
+            relation: "",
+            isHead: false,
+        });
         setIsModalOpen(false);
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Save Member (Add or Edit)
+    |--------------------------------------------------------------------------
+    */
+    const handleSaveMember = async () => {
+        if (
+            !form.name.trim() ||
+            !form.nationalId.trim() ||
+            !form.education ||
+            !form.relation ||
+            form.nationalId.trim().length !== 14 ||
+            isDuplicateNationalId ||
+            (form.phone.trim() !== "" && form.phone.trim().length !== 11) ||
+            isSubmitting
+        ) {
+            return;
+        }
+
+        const isDup = await checkFamilyMemberNationalIdExists(
+            form.nationalId.trim(),
+            editingMember?.id
+        );
+        if (isDup) {
+            setIsDuplicateNationalId(true);
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            if (editingMember) {
+                await updateFamilyMember(editingMember.id, {
+                    ...form,
+                    familyId,
+                });
+            } else {
+                await createFamilyMember({
+                    ...form,
+                    familyId,
+                });
+            }
+            resetForm();
+            await loadMembersData();
+        } catch (error) {
+            console.error("Error saving family member:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Archive Member
+    |--------------------------------------------------------------------------
+    */
+    const handleArchiveMember = async (id: string) => {
+        try {
+            await archiveFamilyMember(id);
+            await loadMembersData();
+        } catch (error) {
+            console.error("Error archiving family member:", error);
+        }
     };
 
     /*
@@ -361,7 +422,7 @@ export default function FamilyDetailsPage() {
             heightLeft -= pageHeight;
         }
 
-        pdf.save(`استمارة-${family.name}.pdf`);
+        pdf.save(`استمارة-${family?.name || "العيلة"}.pdf`);
     };
 
     /*
@@ -369,28 +430,39 @@ export default function FamilyDetailsPage() {
     | تقسيم الأبناء للتقرير
     |--------------------------------------------------------------------------
     */
-    const youngChildren = family.members.filter(
-        (member) =>
-            member.relation === "ابن" ||
-            member.relation === "ابنة"
-    ).filter((member) =>
-        ["حضانة", "ابتدائي", "إعدادي"].includes(
-            member.education
+    const youngChildren = members
+        .filter(
+            (member) =>
+                member.relation === "ابن" ||
+                member.relation === "ابنة"
         )
-    );
+        .filter((member) =>
+            ["حضانة", "ابتدائي", "إعدادي"].includes(
+                member.education
+            )
+        );
 
-    const olderChildren = family.members.filter(
-        (member) =>
-            member.relation === "ابن" ||
-            member.relation === "ابنة"
-    ).filter((member) =>
-        [
-            "ثانوي عام",
-            "ثانوي فني",
-            "جامعة",
-            "متخرج",
-        ].includes(member.education)
-    );
+    const olderChildren = members
+        .filter(
+            (member) =>
+                member.relation === "ابن" ||
+                member.relation === "ابنة"
+        )
+        .filter((member) =>
+            [
+                "ثانوي عام",
+                "ثانوي فني",
+                "جامعة",
+                "متخرج",
+            ].includes(member.education)
+        );
+
+    const formatDateDisplay = (date: string) => {
+        if (!date) return "-";
+        const [year, month, day] = date.split("-");
+        if (!year || !month || !day) return date;
+        return `${day}/${month}/${year}`;
+    };
 
     return (
         <>
@@ -414,7 +486,7 @@ export default function FamilyDetailsPage() {
                             </Link>
 
                             <h1 className="text-3xl font-bold text-[var(--text-main)]">
-                                {family.name}
+                                {family?.name || (loadingFamily ? "جاري التحميل..." : "تفاصيل العيلة")}
                             </h1>
 
                             <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -422,51 +494,80 @@ export default function FamilyDetailsPage() {
                             </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(true)}
-                            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)]"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="h-5 w-5"
+                        {/* View Switch Buttons & Add Member Button */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setMemberViewMode("active")}
+                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
+                                    memberViewMode === "active"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                }`}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M12 4.5v15m7.5-7.5h-15"
-                                />
-                            </svg>
+                                الأفراد النشطة
+                            </button>
 
-                            إضافة فرد
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() => setMemberViewMode("archived")}
+                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
+                                    memberViewMode === "archived"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                }`}
+                            >
+                                الأفراد المحذوفة
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleOpenAddModal}
+                                className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)]"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="h-5 w-5"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 4.5v15m7.5-7.5h-15"
+                                    />
+                                </svg>
+
+                                إضافة فرد
+                            </button>
+                        </div>
                     </div>
 
                     {/* =====================================================
               Family Information
           ====================================================== */}
-                    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    {family && (
+                        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
 
-                        <InfoBox
-                            title="اسم الأسرة"
-                            value={family.name}
-                        />
+                            <InfoBox
+                                title="اسم الأسرة"
+                                value={family.name}
+                            />
 
-                        <InfoBox
-                            title="تاريخ عضوية الكنيسة"
-                            value={family.membershipDate}
-                        />
+                            <InfoBox
+                                title="تاريخ عضوية الكنيسة"
+                                value={formatDateDisplay(family.membershipDate)}
+                            />
 
-                        <InfoBox
-                            title="العنوان"
-                            value={family.address}
-                        />
+                            <InfoBox
+                                title="العنوان"
+                                value={family.address}
+                            />
 
-                    </div>
+                        </div>
+                    )}
 
                     {/* =====================================================
               Family Head Card
@@ -523,7 +624,7 @@ export default function FamilyDetailsPage() {
 
                                     <DetailItem
                                         title="رقم الموبايل"
-                                        value={familyHead.phone}
+                                        value={familyHead.phone || "-"}
                                     />
 
                                     <DetailItem
@@ -657,11 +758,11 @@ export default function FamilyDetailsPage() {
 
                                 <div>
                                     <h2 className="text-xl font-bold text-[var(--text-main)]">
-                                        أفراد الأسرة
+                                        {memberViewMode === "active" ? "أفراد الأسرة النشطة" : "أفراد الأسرة المحذوفة"}
                                     </h2>
 
                                     <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                        {filteredMembers.length} فرد
+                                        {members.length} فرد
                                     </p>
                                 </div>
 
@@ -708,13 +809,17 @@ export default function FamilyDetailsPage() {
                                             رب الأسرة
                                         </th>
 
+                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                            الأحداث
+                                        </th>
+
                                     </tr>
 
                                 </thead>
 
                                 <tbody className="divide-y divide-[var(--border-color)]">
 
-                                    {filteredMembers.map((member) => (
+                                    {members.map((member) => (
 
                                         <tr
                                             key={member.id}
@@ -726,7 +831,7 @@ export default function FamilyDetailsPage() {
                                             </td>
 
                                             <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
-                                                {member.phone}
+                                                {member.phone || "-"}
                                             </td>
 
                                             <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
@@ -767,6 +872,31 @@ export default function FamilyDetailsPage() {
 
                                             </td>
 
+                                            {/* Actions */}
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    {/* Edit Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenEditModal(member)}
+                                                        className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] transition-all hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
+                                                    >
+                                                        تعديل
+                                                    </button>
+
+                                                    {/* Archive Button */}
+                                                    {!member.isArchived && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleArchiveMember(member.id)}
+                                                            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all hover:bg-amber-100"
+                                                        >
+                                                            إضافة للأرشيف
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+
                                         </tr>
 
                                     ))}
@@ -775,14 +905,16 @@ export default function FamilyDetailsPage() {
 
                             </table>
 
-                            {filteredMembers.length === 0 && (
+                            {!loadingMembers && members.length === 0 && (
                                 <div className="px-6 py-12 text-center">
                                     <p className="font-semibold text-[var(--text-main)]">
                                         لا توجد نتائج
                                     </p>
 
                                     <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                        جرب تغيير بيانات البحث
+                                        {memberViewMode === "archived"
+                                            ? "لا يوجد أفراد مؤرشفة لهذه الأسرة"
+                                            : "جرب تغيير بيانات البحث"}
                                     </p>
                                 </div>
                             )}
@@ -826,7 +958,7 @@ export default function FamilyDetailsPage() {
             </main>
 
             {/* =========================================================
-                ADD MEMBER MODAL
+                ADD / EDIT MEMBER MODAL
             ========================================================== */}
             {isModalOpen && (
                 <div
@@ -845,11 +977,13 @@ export default function FamilyDetailsPage() {
 
                             <div>
                                 <h2 className="text-xl font-bold text-[var(--text-main)]">
-                                    إضافة فرد
+                                    {editingMember ? "تعديل بيانات الفرد" : "إضافة فرد"}
                                 </h2>
 
                                 <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                    أضف بيانات فرد جديد إلى الأسرة
+                                    {editingMember
+                                        ? "تعديل بيانات الفرد بالأسرة"
+                                        : "أضف بيانات فرد جديد إلى الأسرة"}
                                 </p>
                             </div>
 
@@ -882,6 +1016,9 @@ export default function FamilyDetailsPage() {
                                 placeholder="01xxxxxxxxx"
                                 value={form.phone}
                                 type="tel"
+                                inputMode="numeric"
+                                maxLength={11}
+                                error={phoneError}
                                 onChange={(value) =>
                                     updateForm("phone", value)
                                 }
@@ -893,6 +1030,9 @@ export default function FamilyDetailsPage() {
                                 placeholder="14 رقم"
                                 value={form.nationalId}
                                 type="text"
+                                inputMode="numeric"
+                                maxLength={14}
+                                error={nationalIdError}
                                 onChange={(value) =>
                                     updateForm("nationalId", value)
                                 }
@@ -1031,17 +1171,20 @@ export default function FamilyDetailsPage() {
 
                             <button
                                 type="button"
-                                onClick={handleAddMember}
+                                onClick={handleSaveMember}
                                 disabled={
                                     !form.name.trim() ||
-                                    !form.phone.trim() ||
                                     !form.nationalId.trim() ||
                                     !form.education ||
-                                    !form.relation
+                                    !form.relation ||
+                                    form.nationalId.trim().length !== 14 ||
+                                    isDuplicateNationalId ||
+                                    (form.phone.trim() !== "" && form.phone.trim().length !== 11) ||
+                                    isSubmitting
                                 }
                                 className="flex-1 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                حفظ
+                                {isSubmitting ? "جاري الحفظ..." : "حفظ"}
                             </button>
 
                         </div>
@@ -1053,7 +1196,6 @@ export default function FamilyDetailsPage() {
 
             {/* =========================================================
           PDF REPORT
-          ده موجود خارج الشاشة وبيتم تصويره وتحويله PDF
       ========================================================== */}
             <div
                 ref={reportRef}
@@ -1064,9 +1206,7 @@ export default function FamilyDetailsPage() {
                 {/* PDF Border */}
                 <div className="border-[2px] border-[#455a72] p-5">
 
-                    {/* =====================================================
-              Header
-          ====================================================== */}
+                    {/* Header */}
                     <div className="mb-5 flex items-center border-b border-black pb-5">
 
                         {/* Logo */}
@@ -1098,76 +1238,94 @@ export default function FamilyDetailsPage() {
 
                     </div>
 
-                    {/* =====================================================
-              Family Data
-          ====================================================== */}
+                    {/* Family Header Table */}
                     <div className="mb-5 border border-black">
 
-                        <div className="grid grid-cols-2">
+                        <div className="grid grid-cols-2 divide-x divide-black border-b border-black text-[14px]">
 
-                            <div className="border-b border-l border-black p-3">
-                                <strong>اسم الأسرة:</strong>
-                                <span className="mr-2">
-                                    {family.name}
-                                </span>
+                            <div className="p-2.5 font-bold">
+                                اسم الأسرة: {family?.name || ""}
                             </div>
 
-                            <div className="border-b border-black p-3">
-                                <strong>تاريخ العضوية:</strong>
-                                <span className="mr-2">
-                                    {family.membershipDate}
-                                </span>
-                            </div>
-
-                            <div className="border-l border-black p-3">
-                                <strong>العنوان:</strong>
-                                <span className="mr-2">
-                                    {family.address}
-                                </span>
-                            </div>
-
-                            <div className="p-3">
-                                <strong>رقم التليفون:</strong>
-                                <span className="mr-2">
-                                    {familyHead?.phone || ""}
-                                </span>
+                            <div className="p-2.5 font-bold">
+                                تاريخ عضوية الكنيسة: {family ? formatDateDisplay(family.membershipDate) : ""}
                             </div>
 
                         </div>
 
+                        <div className="p-2.5 text-[14px] font-bold">
+                            العنوان: {family?.address || ""}
+                        </div>
+
                     </div>
 
-                    {/* =====================================================
-              Husband / Wife
-          ====================================================== */}
-                    <div className="mb-5 grid grid-cols-2 gap-4">
+                    {/* Parents Details */}
+                    <div className="border border-black">
 
-                        {/* Husband */}
-                        <div className="border border-black">
+                        <div className="border-b border-black bg-[#f1ebe6] p-2 text-center text-[15px] font-bold">
+                            بيانات الوالدين
+                        </div>
 
-                            <div className="border-b border-black bg-[#f1ebe6] p-2 text-center font-bold">
-                                الزوج
-                            </div>
+                        {/* Father */}
+                        <div className="border-b border-black p-3 text-[13px]">
 
-                            <div className="p-3 text-[14px] leading-8">
+                            <div className="grid grid-cols-2 gap-4">
 
                                 <div>
-                                    <strong>الاسم:</strong>{" "}
-                                    {family.members.find(
+                                    <strong>اسم الزوج:</strong>{" "}
+                                    {members.find(
                                         (m) => m.relation === "أب"
                                     )?.name || ""}
                                 </div>
 
                                 <div>
+                                    <strong>تاريخ الميلاد:</strong>{" "}
+                                    {getBirthDateFromNationalId(
+                                        members.find(
+                                            (m) => m.relation === "أب"
+                                        )?.nationalId || ""
+                                    )}
+                                </div>
+
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-3 gap-4">
+
+                                <div>
+                                    <strong>الدرجة العلمية:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أب"
+                                    )?.education || ""}
+                                </div>
+
+                                <div>
                                     <strong>الوظيفة:</strong>{" "}
-                                    {family.members.find(
+                                    {members.find(
                                         (m) => m.relation === "أب"
                                     )?.job || ""}
                                 </div>
 
                                 <div>
+                                    <strong>الدخل:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أب"
+                                    )?.income || ""}
+                                </div>
+
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-2 gap-4">
+
+                                <div>
+                                    <strong>الرقم القومي:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أب"
+                                    )?.nationalId || ""}
+                                </div>
+
+                                <div>
                                     <strong>رقم التليفون:</strong>{" "}
-                                    {family.members.find(
+                                    {members.find(
                                         (m) => m.relation === "أب"
                                     )?.phone || ""}
                                 </div>
@@ -1176,32 +1334,66 @@ export default function FamilyDetailsPage() {
 
                         </div>
 
-                        {/* Wife */}
-                        <div className="border border-black">
+                        {/* Mother */}
+                        <div className="p-3 text-[13px]">
 
-                            <div className="border-b border-black bg-[#f1ebe6] p-2 text-center font-bold">
-                                الزوجة
-                            </div>
-
-                            <div className="p-3 text-[14px] leading-8">
+                            <div className="grid grid-cols-2 gap-4">
 
                                 <div>
-                                    <strong>الاسم:</strong>{" "}
-                                    {family.members.find(
+                                    <strong>اسم الزوجة:</strong>{" "}
+                                    {members.find(
                                         (m) => m.relation === "أم"
                                     )?.name || ""}
                                 </div>
 
                                 <div>
+                                    <strong>تاريخ الميلاد:</strong>{" "}
+                                    {getBirthDateFromNationalId(
+                                        members.find(
+                                            (m) => m.relation === "أم"
+                                        )?.nationalId || ""
+                                    )}
+                                </div>
+
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-3 gap-4">
+
+                                <div>
+                                    <strong>الدرجة العلمية:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أم"
+                                    )?.education || ""}
+                                </div>
+
+                                <div>
                                     <strong>الوظيفة:</strong>{" "}
-                                    {family.members.find(
+                                    {members.find(
                                         (m) => m.relation === "أم"
                                     )?.job || ""}
                                 </div>
 
                                 <div>
+                                    <strong>الدخل:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أم"
+                                    )?.income || ""}
+                                </div>
+
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-2 gap-4">
+
+                                <div>
+                                    <strong>الرقم القومي:</strong>{" "}
+                                    {members.find(
+                                        (m) => m.relation === "أم"
+                                    )?.nationalId || ""}
+                                </div>
+
+                                <div>
                                     <strong>رقم التليفون:</strong>{" "}
-                                    {family.members.find(
+                                    {members.find(
                                         (m) => m.relation === "أم"
                                     )?.phone || ""}
                                 </div>
@@ -1212,25 +1404,19 @@ export default function FamilyDetailsPage() {
 
                     </div>
 
-                    {/* =====================================================
-              Young Children
-          ====================================================== */}
+                    {/* Young Children */}
                     <ReportChildrenTable
                         title="الأبناء ( حضانة / ابتدائي / إعدادي )"
                         members={youngChildren}
                     />
 
-                    {/* =====================================================
-              Older Children
-          ====================================================== */}
+                    {/* Older Children */}
                     <ReportChildrenTable
                         title="الأبناء ( ثانوي / جامعة / متخرجين )"
                         members={olderChildren}
                     />
 
-                    {/* =====================================================
-              Relatives
-          ====================================================== */}
+                    {/* Relatives */}
                     <div className="mt-5 border border-black">
 
                         <div className="border-b border-black bg-[#f1ebe6] p-2 text-center font-bold">
@@ -1281,9 +1467,7 @@ export default function FamilyDetailsPage() {
 
                     </div>
 
-                    {/* =====================================================
-              Footer
-          ====================================================== */}
+                    {/* Footer */}
                     <div className="mt-8 grid grid-cols-2 gap-8 text-[15px]">
 
                         <div>
@@ -1368,12 +1552,18 @@ function FormInput({
     value,
     onChange,
     type = "text",
+    error,
+    inputMode,
+    maxLength,
 }: {
     label: string;
     placeholder: string;
     value: string;
     onChange: (value: string) => void;
     type?: string;
+    error?: string;
+    inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+    maxLength?: number;
 }) {
     return (
         <div>
@@ -1385,9 +1575,19 @@ function FormInput({
                 type={type}
                 value={value}
                 placeholder={placeholder}
+                inputMode={inputMode}
+                maxLength={maxLength}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                className={`w-full rounded-[var(--radius-md)] border ${
+                    error ? "border-red-500" : "border-[var(--border-color)]"
+                } bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]`}
             />
+
+            {error && (
+                <p className="mt-1.5 text-xs font-semibold text-red-500">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }
@@ -1402,7 +1602,7 @@ function ReportChildrenTable({
     members,
 }: {
     title: string;
-    members: FamilyMember[];
+    members: FamilyMemberData[];
 }) {
     return (
         <div className="mt-5 border border-black">

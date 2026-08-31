@@ -2,7 +2,7 @@ import 'dotenv/config';
 import argon2 from 'argon2';
 import { db } from './db';
 
-const SINGLE_ALLOWED_EMAIL = 'montasergohar@gmail.com';
+const SINGLE_ALLOWED_EMAIL = 'fr.sergious.habib@gmail.com';
 
 async function seedSingleUser() {
   const initialPassword = process.env['INITIAL_USER_PASSWORD'];
@@ -52,8 +52,8 @@ async function seedSingleUser() {
     // Create single user
     const newUser = await db.orm.public.User.create({
       email: SINGLE_ALLOWED_EMAIL,
-      username: 'montasergohar',
-      name: 'Montaser Gohar',
+      username: 'keroloskhairy',
+      name: 'kerolos khairy',
       passwordHash,
     });
     console.log(

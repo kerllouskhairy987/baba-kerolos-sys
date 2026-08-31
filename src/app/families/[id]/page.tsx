@@ -34,7 +34,7 @@ export default async function FamilyDetailsDynamicPage({
                             </span>
                         </p> */}
 
-                        <FamilyDetailsPage />
+                        <FamilyDetailsPage familyId={id} />
                     </div>
                 </div>
             </main>

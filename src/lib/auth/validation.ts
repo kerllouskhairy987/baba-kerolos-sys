@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const SINGLE_ALLOWED_EMAIL = 'montasergohar@gmail.com';
+export const SINGLE_ALLOWED_EMAIL = 'fr.sergious.habib@gmail.com';
 
 /**
  * Zod schema for validating the single allowed email.

@@ -1,13 +1,21 @@
-import ServantsDetailsPage from '@/components/servants/ServantsDetailsPage'
-import Navbar from '@/components/shared/Navbar'
+import ServantsDetailsPage from "@/components/servants/ServantsDetailsPage";
+import Navbar from "@/components/shared/Navbar";
 
-const page = () => {
+type ServantsDetailsPageDynamicProps = {
+    params: Promise<{
+        id: string;
+    }>;
+};
+
+export default async function ServantsDetailsDynamicPage({
+    params,
+}: ServantsDetailsPageDynamicProps) {
+    const { id } = await params;
+
     return (
         <>
             <Navbar />
-            <ServantsDetailsPage />
+            <ServantsDetailsPage servantId={id} />
         </>
-    )
+    );
 }
-
-export default page

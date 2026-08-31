@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export const SENDER_EMAIL = 'montasergohar@gmail.com';
+export const SENDER_EMAIL = 'fr.sergious.habib@gmail.com';
 
 /**
  * Creates and returns a Nodemailer transporter configured for Gmail SMTP.
@@ -29,7 +29,7 @@ export interface SendEmailResult {
 }
 
 /**
- * Sends a password reset verification code email to montasergohar@gmail.com.
+ * Sends a password reset verification code email to fr.sergious.habib@gmail.com.
  */
 export async function sendVerificationCodeEmail(
   toEmail: string,
