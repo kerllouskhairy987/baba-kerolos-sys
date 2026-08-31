@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import FamilyDetailsPage from "@/components/families/FamilyDetailsPage";
 import Navbar from "@/components/shared/Navbar";
+
+export const metadata: Metadata = {
+    title: "تفاصيل العائلة",
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
 
 type FamilyDetailsPageDynamicProps = {
     params: Promise<{

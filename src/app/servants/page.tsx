@@ -1,5 +1,14 @@
-import ServantsPage from '@/components/servants/ServantsPageComponent'
-import Navbar from '@/components/shared/Navbar'
+import type { Metadata } from "next";
+import ServantsPage from "@/components/servants/ServantsPageComponent";
+import Navbar from "@/components/shared/Navbar";
+
+export const metadata: Metadata = {
+    title: "الخدام",
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
 
 const Page = () => {
     return (
@@ -7,7 +16,7 @@ const Page = () => {
             <Navbar />
             <ServantsPage />
         </div>
-    )
-}
+    );
+};
 
-export default Page
+export default Page;
