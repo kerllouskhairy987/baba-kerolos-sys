@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/shared/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ar" dir="rtl"
       className={`${geistSans.variable} ${notoNaskhArabic.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="flex-1">{children}</div>
+        <Footer />
+      </body>
     </html>
   );
 }
+
