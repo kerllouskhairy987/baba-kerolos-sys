@@ -12,6 +12,8 @@
     "db:seed": "tsx src/prisma/seed.ts"
   },
   "dependencies": {
+    "@neon/config": "^1.1.0",
+    "@neon/env": "^1.1.6",
     "@prisma/orm-postgres": "^8.0.0-rc.8",
     "argon2": "^0.45.1",
     "dotenv": "^17.4.2",

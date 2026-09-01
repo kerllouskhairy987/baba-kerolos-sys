@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     template: "%s | كنيسة البابا كيرلس بعثمان محرم",
   },
   description: "الموقع الرسمي لكنيسة البابا كيرلس بعثمان محرم، لخدمة وتنظيم بيانات العائلات والخدام والآباء الكهنة.",
+  verification: {
+    google: "47IwqRN0Ngws4YGHghaE_MsDwQJRg_eQLE5x9mbqG0c",
+  },
   keywords: [
     "كنيسة البابا كيرلس",
     "كنيسة البابا كيرلس بعثمان محرم",
