@@ -12,6 +12,11 @@ export function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const hasSession = Boolean(sessionToken && sessionToken.trim() !== '');
 
+  // 1. Homepage / is always publicly accessible for all users and search engines
+  if (pathname === '/') {
+    return NextResponse.next();
+  }
+
   const isPublicAuthRoute = PUBLIC_AUTH_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
@@ -19,17 +24,17 @@ export function proxy(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // 1. If user is authenticated and tries to access /login or /forgot-password -> redirect to home /
+  // 2. If user is authenticated and tries to access /login or /forgot-password -> redirect to home /
   if (hasSession && isPublicAuthRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // 2. If route is a public auth route or password reset flow route -> allow access
+  // 3. If route is a public auth route or password reset flow route -> allow access
   if (isPublicAuthRoute || isResetFlowRoute) {
     return NextResponse.next();
   }
 
-  // 3. Protected Routes: If user does not have a session cookie -> redirect to /login
+  // 4. Protected Routes: If user does not have a session cookie -> redirect to /login
   if (!hasSession) {
     return NextResponse.redirect(new URL('/login', request.url));
   }

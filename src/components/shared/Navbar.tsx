@@ -1,11 +1,10 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { logoutAction } from "@/lib/actions/auth-actions";
+import { getCurrentSession } from "@/lib/auth/session";
 
-export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false);
+export default async function Navbar() {
+    const session = await getCurrentSession();
+    const isAuthenticated = Boolean(session);
 
     const links = [
         { label: "العائلات", href: "/families" },
@@ -41,22 +40,30 @@ export default function Navbar() {
                             </Link>
                         ))}
 
-                        <form action={logoutAction}>
-                            <button
-                                type="submit"
-                                className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 cursor-pointer"
+                        {isAuthenticated ? (
+                            <form action={logoutAction}>
+                                <button
+                                    type="submit"
+                                    className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 cursor-pointer"
+                                >
+                                    تسجيل الخروج
+                                </button>
+                            </form>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="text-sm font-medium text-[var(--primary)] transition-colors hover:text-[var(--primary-hover)]"
                             >
-                                تسجيل الخروج
-                            </button>
-                        </form>
+                                تسجيل الدخول
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button
-                        type="button"
-                        onClick={() => setIsOpen(true)}
+                    <label
+                        htmlFor="mobile-menu-toggle"
                         aria-label="فتح القائمة"
-                        className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-main)] transition-colors hover:bg-[var(--primary-light)] hover:text-[var(--primary)] md:hidden"
+                        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-main)] transition-colors hover:bg-[var(--primary-light)] hover:text-[var(--primary)] md:hidden"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -72,23 +79,27 @@ export default function Navbar() {
                                 d="M4 6h16M4 12h16M4 18h16"
                             />
                         </svg>
-                    </button>
+                    </label>
                 </div>
             </nav>
 
+            {/* Mobile Drawer Toggle (Peer) */}
+            <input
+                type="checkbox"
+                id="mobile-menu-toggle"
+                className="peer hidden"
+            />
+
             {/* Overlay */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/30 md:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
+            <label
+                htmlFor="mobile-menu-toggle"
+                className="fixed inset-0 z-40 hidden bg-black/30 backdrop-blur-xs peer-checked:block md:hidden cursor-pointer"
+            />
 
             {/* Mobile Aside */}
             <aside
                 dir="rtl"
-                className={`fixed right-0 top-0 z-50 h-full w-72 bg-[var(--card-bg)] shadow-2xl transition-transform duration-300 md:hidden ${isOpen ? "translate-x-0" : "translate-x-full"
-                    }`}
+                className="fixed right-0 top-0 z-50 h-full w-72 translate-x-full bg-[var(--card-bg)] shadow-2xl transition-transform duration-300 peer-checked:translate-x-0 md:hidden"
             >
                 {/* Aside Header */}
                 <div className="flex h-16 items-center justify-between border-b border-[var(--border-color)] px-5">
@@ -96,11 +107,10 @@ export default function Navbar() {
                         القائمة
                     </span>
 
-                    <button
-                        type="button"
-                        onClick={() => setIsOpen(false)}
+                    <label
+                        htmlFor="mobile-menu-toggle"
                         aria-label="إغلاق القائمة"
-                        className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] transition-colors hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] transition-colors hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +126,7 @@ export default function Navbar() {
                                 d="M6 18 18 6M6 6l12 12"
                             />
                         </svg>
-                    </button>
+                    </label>
                 </div>
 
                 {/* Mobile Links */}
@@ -125,21 +135,31 @@ export default function Navbar() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            onClick={() => setIsOpen(false)}
                             className="rounded-[var(--radius-md)] px-4 py-3 text-base font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
                         >
                             {link.label}
                         </Link>
                     ))}
 
-                    <form action={logoutAction} className="mt-4 pt-4 border-t border-[var(--border-color)]">
-                        <button
-                            type="submit"
-                            className="w-full text-right rounded-[var(--radius-md)] px-4 py-3 text-base font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
-                        >
-                            تسجيل الخروج
-                        </button>
-                    </form>
+                    {isAuthenticated ? (
+                        <form action={logoutAction} className="mt-4 pt-4 border-t border-[var(--border-color)]">
+                            <button
+                                type="submit"
+                                className="w-full text-right rounded-[var(--radius-md)] px-4 py-3 text-base font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                            >
+                                تسجيل الخروج
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
+                            <Link
+                                href="/login"
+                                className="block w-full text-right rounded-[var(--radius-md)] px-4 py-3 text-base font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary-light)]"
+                            >
+                                تسجيل الدخول
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>
