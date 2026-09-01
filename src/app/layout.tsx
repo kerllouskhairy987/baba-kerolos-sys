@@ -13,7 +13,7 @@ const notoNaskhArabic = Noto_Naskh_Arabic({
   subsets: ["arabic"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kerlos-church.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://babakerolos.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
