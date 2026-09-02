@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   description: "الموقع الرسمي لكنيسة البابا كيرلس بغرب النوبارية، لخدمة وتنظيم بيانات العائلات والخدام والآباء الكهنة.",
   verification: {
-    google: "47IwqRN0Ngws4YGHghaE_MsDwQJRg_eQLE5x9mbqG0c",
+    google: "Z_HHreqVgUaRhhO7oSe9AZHNKIKMAzLBIRDjiRFFiJs",
   },
   keywords: [
     "كنيسة البابا كيرلس",
