@@ -279,7 +279,7 @@ export default function ServantsPage() {
                     hover:bg-[var(--primary-hover)]
                     focus:outline-none
                     focus:ring-4
-                    focus:ring-[var(--primary-focus)]
+                    focus:ring-[var(--primary-focus)] w-full sm:w-fit
                   "
                             >
                                 <svg

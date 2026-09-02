@@ -427,7 +427,7 @@ export default function PriestsDetailsPage({ priestId = "1" }: PriestsDetailsPag
                             <button
                                 type="button"
                                 onClick={handleOpenAddModal}
-                                className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)] w-full sm:w-fit"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"

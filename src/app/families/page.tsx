@@ -19,4 +19,4 @@ const FamiliesPage = () => {
     );
 };
 
-export default FamiliesPage;
+export default FamiliesPage;

@@ -36,13 +36,6 @@ export default async function FamilyDetailsDynamicPage({
                             تفاصيل العيلة
                         </h1>
 
-                        {/* <p className="mt-4 text-[var(--text-muted)]">
-                            ID العيلة:{" "}
-                            <span className="font-semibold text-[var(--primary)]">
-                                {id}
-                            </span>
-                        </p> */}
-
                         <FamilyDetailsPage familyId={id} />
                     </div>
                 </div>

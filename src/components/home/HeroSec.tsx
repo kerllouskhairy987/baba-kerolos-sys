@@ -89,11 +89,17 @@ export default function HeroSlider() {
             {/* ================= Content ================= */}
             <div className="absolute inset-0 flex items-center justify-center px-5">
                 <div className="text-center">
+                    {/* Permanent Server-Rendered H1 for SEO */}
+                    <h1 className="sr-only">كنيسة البابا كيرلس بغرب النوبارية</h1>
+
                     {/* Animated Text */}
-                    <h1 className=" text-3xl font-bold leading-relaxed text-white drop-shadow-lg sm:text-4xl md:text-5xl lg:text-6xl">
+                    <p
+                        aria-hidden="true"
+                        className="text-3xl font-bold leading-relaxed text-white drop-shadow-lg sm:text-4xl md:text-5xl lg:text-6xl"
+                    >
                         {displayText}
-                        <span className=" mr-1 inline-block h-[1em] w-[3px] translate-y-1 animate-pulse bg-[var(--primary-light)]" />
-                    </h1>
+                        <span className="mr-1 inline-block h-[1em] w-[3px] translate-y-1 animate-pulse bg-[var(--primary-light)]" />
+                    </p>
 
                     {/* Small decorative line */}
                     <div className="mx-auto mt-6 h-1 w-16 rounded-full bg-[var(--primary-light)] opacity-90" />
