@@ -14,7 +14,7 @@ const images = [
     "/slide-6.jpeg",
 ];
 
-const text = "كنيسة البابا كيرلس بعثمان محرم ترحب بكم";
+const text = "كنيسة البابا كيرلس بغرب النوبارية ترحب بكم";
 
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -70,7 +70,7 @@ export default function HeroSlider() {
                     >
                         <Image
                             src={image}
-                            alt={`كنيسة البابا كيرلس بعثمان محرم - صورة ${index + 1}`}
+                            alt={`كنيسة البابا كيرلس بغرب النوبارية - صورة ${index + 1}`}
                             fill
                             priority={index === 0}
                             className="object-cover"
@@ -109,8 +109,8 @@ export default function HeroSlider() {
                         aria-label={`الصورة ${index + 1}`}
                         onClick={() => setCurrentSlide(index)}
                         className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
-                                ? "w-8 bg-[var(--primary-light)]"
-                                : "w-2 bg-white/60"
+                            ? "w-8 bg-[var(--primary-light)]"
+                            : "w-2 bg-white/60"
                             }`}
                     />
                 ))}

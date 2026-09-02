@@ -49,13 +49,13 @@ export default function Footer() {
                         >
                             <Image
                                 src="/images/church-logo.png"
-                                alt="شعار كنيسة البابا كيرلس بعثمان محرم"
+                                alt="شعار كنيسة البابا كيرلس بغرب النوبارية"
                                 width={60}
                                 height={60}
                                 className="h-14 w-14 object-contain drop-shadow-sm"
                             />
                             <span className="text-lg font-bold text-[var(--primary)] transition-colors group-hover:text-[var(--primary-hover)]">
-                                كنيسة البابا كيرلس بعثمان محرم
+                                كنيسة البابا كيرلس بغرب النوبارية
                             </span>
                         </Link>
 
