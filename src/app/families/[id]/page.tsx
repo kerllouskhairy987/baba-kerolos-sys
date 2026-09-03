@@ -30,7 +30,7 @@ export default async function FamilyDetailsDynamicPage({
             >
                 <div className="mx-auto max-w-6xl">
                     <div
-                        className=" rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] pt-3 px-1 md:p-8 shadow-[var(--shadow-card)]"
+                        className=" rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] pt-3 px-1 md:p-8 shadow-[var(--shadow-card)] overflow-x-hidden max-w-full"
                     >
                         <h1 className="text-3xl text-center md:text-start font-bold text-[var(--text-main)]">
                             تفاصيل العيلة
