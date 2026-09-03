@@ -501,8 +501,8 @@ export default function FamilyDetailsPage({ familyId = "1" }: FamilyDetailsPageP
                                     type="button"
                                     onClick={() => setMemberViewMode("active")}
                                     className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${memberViewMode === "active"
-                                            ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
-                                            : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
                                         }`}
                                 >
                                     الأفراد النشطة
@@ -512,8 +512,8 @@ export default function FamilyDetailsPage({ familyId = "1" }: FamilyDetailsPageP
                                     type="button"
                                     onClick={() => setMemberViewMode("archived")}
                                     className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${memberViewMode === "archived"
-                                            ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
-                                            : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
                                         }`}
                                 >
                                     الأفراد المحذوفة
@@ -1199,7 +1199,7 @@ export default function FamilyDetailsPage({ familyId = "1" }: FamilyDetailsPageP
             <div
                 ref={reportRef}
                 dir="rtl"
-                className="pointer-events-none absolute left-[-99999px] top-0 w-[794px] bg-white p-8 text-black"
+                className="pointer-events-none fixed left-[-1000px] top-0 w-[794px] bg-white p-8 text-black"
             >
 
                 {/* PDF Border */}
