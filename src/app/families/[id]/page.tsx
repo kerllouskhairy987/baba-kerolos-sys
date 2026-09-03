@@ -22,7 +22,7 @@ export default async function FamilyDetailsDynamicPage({
     const { id } = await params;
 
     return (
-        <>
+        <div className="w-full overflow-x-hidden">
             <Navbar />
             <main
                 dir="rtl"
@@ -40,6 +40,6 @@ export default async function FamilyDetailsDynamicPage({
                     </div>
                 </div>
             </main>
-        </>
+        </div>
     );
 }

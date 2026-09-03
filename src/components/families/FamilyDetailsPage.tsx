@@ -466,734 +466,733 @@ export default function FamilyDetailsPage({ familyId = "1" }: FamilyDetailsPageP
 
     return (
         <>
-            <main
-                dir="rtl"
-                className="min-h-screen bg-[var(--bg-page)] px-1 py-8 sm:px-6 lg:px-8"
-            >
-                <div className="mx-auto max-w-7xl">
+            <section className="w-full overflow-x-hidden">
+                <main
+                    dir="rtl"
+                    className="min-h-screen bg-[var(--bg-page)] px-1 py-8 sm:px-6 lg:px-8"
+                >
+                    <div className="mx-auto max-w-7xl">
 
-                    {/* =====================================================
+                        {/* =====================================================
               Header
           ====================================================== */}
-                    <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-                        <div>
-                            <Link
-                                href="/families"
-                                className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
-                            >
-                                ← العودة للعائلات
-                            </Link>
+                            <div>
+                                <Link
+                                    href="/families"
+                                    className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
+                                >
+                                    ← العودة للعائلات
+                                </Link>
 
-                            <h1 className="text-3xl font-bold text-[var(--text-main)]">
-                                {family?.name || (loadingFamily ? "جاري التحميل..." : "تفاصيل العيلة")}
-                            </h1>
+                                <h1 className="text-3xl font-bold text-[var(--text-main)]">
+                                    {family?.name || (loadingFamily ? "جاري التحميل..." : "تفاصيل العيلة")}
+                                </h1>
 
-                            <p className="mt-2 text-sm text-[var(--text-muted)]">
-                                إدارة أفراد الأسرة وبياناتهم
-                            </p>
+                                <p className="mt-2 text-sm text-[var(--text-muted)]">
+                                    إدارة أفراد الأسرة وبياناتهم
+                                </p>
+                            </div>
+
+                            {/* View Switch Buttons & Add Member Button */}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setMemberViewMode("active")}
+                                    className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${memberViewMode === "active"
+                                            ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                            : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                        }`}
+                                >
+                                    الأفراد النشطة
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setMemberViewMode("archived")}
+                                    className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${memberViewMode === "archived"
+                                            ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
+                                            : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
+                                        }`}
+                                >
+                                    الأفراد المحذوفة
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleOpenAddModal}
+                                    className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)] w-full sm:w-fit"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2}
+                                        stroke="currentColor"
+                                        className="h-5 w-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M12 4.5v15m7.5-7.5h-15"
+                                        />
+                                    </svg>
+
+                                    إضافة فرد
+                                </button>
+                            </div>
                         </div>
 
-                        {/* View Switch Buttons & Add Member Button */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setMemberViewMode("active")}
-                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
-                                    memberViewMode === "active"
-                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
-                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
-                                }`}
-                            >
-                                الأفراد النشطة
-                            </button>
+                        {/* =====================================================
+              Family Information
+          ====================================================== */}
+                        {family && (
+                            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                                <InfoBox
+                                    title="اسم الأسرة"
+                                    value={family.name}
+                                />
+
+                                <InfoBox
+                                    title="تاريخ عضوية الكنيسة"
+                                    value={formatDateDisplay(family.membershipDate)}
+                                />
+
+                                <InfoBox
+                                    title="العنوان"
+                                    value={family.address}
+                                />
+
+                            </div>
+                        )}
+
+                        {/* =====================================================
+              Family Head Card
+          ====================================================== */}
+                        {familyHead && (
+                            <section className="mb-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--primary-border)] bg-[var(--card-bg)] shadow-[var(--shadow-card)]">
+
+                                <div className="h-2 bg-[var(--primary)]" />
+
+                                <div className="p-6">
+
+                                    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                        <div className="flex items-center gap-4">
+
+                                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary-light)] text-[var(--primary)]">
+
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="h-8 w-8"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
+                                                    />
+                                                </svg>
+
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-[var(--text-muted)]">
+                                                    رب الأسرة
+                                                </p>
+
+                                                <h2 className="text-2xl font-bold text-[var(--text-main)]">
+                                                    {familyHead.name}
+                                                </h2>
+                                            </div>
+
+                                        </div>
+
+                                        <span className="w-fit rounded-full bg-[var(--primary-light)] px-4 py-2 text-sm font-semibold text-[var(--primary)]">
+                                            رب الأسرة
+                                        </span>
+
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                                        <DetailItem
+                                            title="رقم الموبايل"
+                                            value={familyHead.phone || "-"}
+                                        />
+
+                                        <DetailItem
+                                            title="الرقم القومي"
+                                            value={familyHead.nationalId}
+                                        />
+
+                                        <DetailItem
+                                            title="الدرجة العلمية"
+                                            value={familyHead.education}
+                                        />
+
+                                        <DetailItem
+                                            title="الوظيفة"
+                                            value={familyHead.job || "-"}
+                                        />
+
+                                        <DetailItem
+                                            title="متوسط الدخل"
+                                            value={
+                                                familyHead.income
+                                                    ? `${familyHead.income} جنيه`
+                                                    : "-"
+                                            }
+                                        />
+
+                                        <DetailItem
+                                            title="صلة القرابة"
+                                            value={familyHead.relation}
+                                        />
+
+                                        <DetailItem
+                                            title="تاريخ الميلاد"
+                                            value={getBirthDateFromNationalId(
+                                                familyHead.nationalId
+                                            )}
+                                        />
+
+                                    </div>
+
+                                </div>
+                            </section>
+                        )}
+
+                        {/* =====================================================
+              Search
+          ====================================================== */}
+                        <section className="mb-6 rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] p-5 shadow-[var(--shadow-card)]">
+
+                            <h2 className="mb-4 text-lg font-bold text-[var(--text-main)]">
+                                البحث في أفراد الأسرة
+                            </h2>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+                                {/* Name */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
+                                        البحث بالاسم
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={searchName}
+                                        onChange={(e) =>
+                                            setSearchName(e.target.value)
+                                        }
+                                        placeholder="اكتب اسم الفرد..."
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                    />
+                                </div>
+
+                                {/* National ID */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
+                                        البحث بالرقم القومي
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={searchNationalId}
+                                        onChange={(e) =>
+                                            setSearchNationalId(e.target.value)
+                                        }
+                                        placeholder="اكتب الرقم القومي..."
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                    />
+                                </div>
+
+                                {/* Education */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
+                                        الدرجة العلمية
+                                    </label>
+
+                                    <select
+                                        value={educationFilter}
+                                        onChange={(e) =>
+                                            setEducationFilter(
+                                                e.target.value as Education | ""
+                                            )
+                                        }
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                    >
+                                        <option value="">
+                                            كل الدرجات العلمية
+                                        </option>
+
+                                        {educationOptions.map((education) => (
+                                            <option
+                                                key={education}
+                                                value={education}
+                                            >
+                                                {education}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                            </div>
+                        </section>
+
+                        {/* =====================================================
+              Members Table
+          ====================================================== */}
+                        <section className="mb-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] shadow-[var(--shadow-card)]">
+
+                            <div className="border-b border-[var(--border-color)] px-6 py-5">
+                                <div className="flex items-center justify-between">
+
+                                    <div>
+                                        <h2 className="text-xl font-bold text-[var(--text-main)]">
+                                            {memberViewMode === "active" ? "أفراد الأسرة النشطة" : "أفراد الأسرة المحذوفة"}
+                                        </h2>
+
+                                        <p className="mt-1 text-sm text-[var(--text-muted)]">
+                                            {members.length} فرد
+                                        </p>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div className="overflow-x-auto">
+
+                                <table className="w-full min-w-[1000px] text-right">
+
+                                    <thead className="bg-[var(--primary-light)]">
+
+                                        <tr>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الاسم
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الموبايل
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الرقم القومي
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الدرجة العلمية
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الوظيفة
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الدخل
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                صلة القرابة
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                رب الأسرة
+                                            </th>
+
+                                            <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
+                                                الأحداث
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody className="divide-y divide-[var(--border-color)]">
+
+                                        {members.map((member) => (
+
+                                            <tr
+                                                key={member.id}
+                                                className="transition-colors hover:bg-[var(--primary-light)]/40"
+                                            >
+
+                                                <td className="px-5 py-4 font-semibold text-[var(--text-main)]">
+                                                    {member.name}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                                                    {member.phone || "-"}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                                                    {member.nationalId}
+                                                </td>
+
+                                                <td className="px-5 py-4">
+                                                    <span className="rounded-full bg-[var(--primary-light)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+                                                        {member.education}
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                                                    {member.job || "-"}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                                                    {member.income
+                                                        ? `${member.income} جنيه`
+                                                        : "-"}
+                                                </td>
+
+                                                <td className="px-5 py-4 text-sm text-[var(--text-main)]">
+                                                    {member.relation}
+                                                </td>
+
+                                                <td className="px-5 py-4">
+
+                                                    {member.isHead ? (
+                                                        <span className="inline-flex rounded-full bg-[var(--success-bg)] px-3 py-1 text-xs font-semibold text-[var(--success-text)]">
+                                                            نعم
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-sm text-[var(--text-muted)]">
+                                                            لا
+                                                        </span>
+                                                    )}
+
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td className="px-5 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Edit Button */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleOpenEditModal(member)}
+                                                            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] transition-all hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
+                                                        >
+                                                            تعديل
+                                                        </button>
+
+                                                        {/* Archive Button */}
+                                                        {!member.isArchived && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleArchiveMember(member.id)}
+                                                                className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all hover:bg-amber-100"
+                                                            >
+                                                                إضافة للأرشيف
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+
+                                        ))}
+
+                                    </tbody>
+
+                                </table>
+
+                                {!loadingMembers && members.length === 0 && (
+                                    <div className="px-6 py-12 text-center">
+                                        <p className="font-semibold text-[var(--text-main)]">
+                                            لا توجد نتائج
+                                        </p>
+
+                                        <p className="mt-1 text-sm text-[var(--text-muted)]">
+                                            {memberViewMode === "archived"
+                                                ? "لا يوجد أفراد مؤرشفة لهذه الأسرة"
+                                                : "جرب تغيير بيانات البحث"}
+                                        </p>
+                                    </div>
+                                )}
+
+                            </div>
+
+                        </section>
+
+                        {/* =====================================================
+              Print Button
+          ====================================================== */}
+                        <div className="flex justify-center pb-8">
 
                             <button
                                 type="button"
-                                onClick={() => setMemberViewMode("archived")}
-                                className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-4 ${
-                                    memberViewMode === "archived"
-                                        ? "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)] focus:ring-[var(--primary-focus)]"
-                                        : "border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-main)] hover:bg-[var(--primary-light)] focus:ring-[var(--primary-focus)]"
-                                }`}
+                                onClick={handlePrintReport}
+                                className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--primary)] px-7 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)]"
                             >
-                                الأفراد المحذوفة
-                            </button>
 
-                            <button
-                                type="button"
-                                onClick={handleOpenAddModal}
-                                className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)] w-full sm:w-fit"
-                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    strokeWidth={2}
+                                    strokeWidth={1.8}
                                     stroke="currentColor"
                                     className="h-5 w-5"
                                 >
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        d="M12 4.5v15m7.5-7.5h-15"
+                                        d="M6.75 9V4.5h10.5V9M6 18H4.5A1.5 1.5 0 0 1 3 16.5v-6A1.5 1.5 0 0 1 4.5 9h15a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H18m-12 0v1.5A1.5 1.5 0 0 0 7.5 21h9a1.5 1.5 0 0 0 1.5-1.5V15H6v3Z"
                                     />
                                 </svg>
 
-                                إضافة فرد
+                                طباعة تقرير
                             </button>
+
                         </div>
+
                     </div>
+                </main>
 
-                    {/* =====================================================
-              Family Information
-          ====================================================== */}
-                    {family && (
-                        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {/* =========================================================
+                ADD / EDIT MEMBER MODAL
+            ========================================================== */}
+                {isModalOpen && (
+                    <div
+                        dir="rtl"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2 py-3 backdrop-blur-sm"
+                        onClick={resetForm}
+                    >
 
-                            <InfoBox
-                                title="اسم الأسرة"
-                                value={family.name}
-                            />
+                        <div
+                            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
 
-                            <InfoBox
-                                title="تاريخ عضوية الكنيسة"
-                                value={formatDateDisplay(family.membershipDate)}
-                            />
-
-                            <InfoBox
-                                title="العنوان"
-                                value={family.address}
-                            />
-
-                        </div>
-                    )}
-
-                    {/* =====================================================
-              Family Head Card
-          ====================================================== */}
-                    {familyHead && (
-                        <section className="mb-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--primary-border)] bg-[var(--card-bg)] shadow-[var(--shadow-card)]">
-
-                            <div className="h-2 bg-[var(--primary)]" />
-
-                            <div className="p-6">
-
-                                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-                                    <div className="flex items-center gap-4">
-
-                                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary-light)] text-[var(--primary)]">
-
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="h-8 w-8"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
-                                                />
-                                            </svg>
-
-                                        </div>
-
-                                        <div>
-                                            <p className="text-sm text-[var(--text-muted)]">
-                                                رب الأسرة
-                                            </p>
-
-                                            <h2 className="text-2xl font-bold text-[var(--text-main)]">
-                                                {familyHead.name}
-                                            </h2>
-                                        </div>
-
-                                    </div>
-
-                                    <span className="w-fit rounded-full bg-[var(--primary-light)] px-4 py-2 text-sm font-semibold text-[var(--primary)]">
-                                        رب الأسرة
-                                    </span>
-
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-                                    <DetailItem
-                                        title="رقم الموبايل"
-                                        value={familyHead.phone || "-"}
-                                    />
-
-                                    <DetailItem
-                                        title="الرقم القومي"
-                                        value={familyHead.nationalId}
-                                    />
-
-                                    <DetailItem
-                                        title="الدرجة العلمية"
-                                        value={familyHead.education}
-                                    />
-
-                                    <DetailItem
-                                        title="الوظيفة"
-                                        value={familyHead.job || "-"}
-                                    />
-
-                                    <DetailItem
-                                        title="متوسط الدخل"
-                                        value={
-                                            familyHead.income
-                                                ? `${familyHead.income} جنيه`
-                                                : "-"
-                                        }
-                                    />
-
-                                    <DetailItem
-                                        title="صلة القرابة"
-                                        value={familyHead.relation}
-                                    />
-
-                                    <DetailItem
-                                        title="تاريخ الميلاد"
-                                        value={getBirthDateFromNationalId(
-                                            familyHead.nationalId
-                                        )}
-                                    />
-
-                                </div>
-
-                            </div>
-                        </section>
-                    )}
-
-                    {/* =====================================================
-              Search
-          ====================================================== */}
-                    <section className="mb-6 rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] p-5 shadow-[var(--shadow-card)]">
-
-                        <h2 className="mb-4 text-lg font-bold text-[var(--text-main)]">
-                            البحث في أفراد الأسرة
-                        </h2>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-                            {/* Name */}
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
-                                    البحث بالاسم
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={searchName}
-                                    onChange={(e) =>
-                                        setSearchName(e.target.value)
-                                    }
-                                    placeholder="اكتب اسم الفرد..."
-                                    className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
-                                />
-                            </div>
-
-                            {/* National ID */}
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
-                                    البحث بالرقم القومي
-                                </label>
-
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={searchNationalId}
-                                    onChange={(e) =>
-                                        setSearchNationalId(e.target.value)
-                                    }
-                                    placeholder="اكتب الرقم القومي..."
-                                    className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
-                                />
-                            </div>
-
-                            {/* Education */}
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
-                                    الدرجة العلمية
-                                </label>
-
-                                <select
-                                    value={educationFilter}
-                                    onChange={(e) =>
-                                        setEducationFilter(
-                                            e.target.value as Education | ""
-                                        )
-                                    }
-                                    className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
-                                >
-                                    <option value="">
-                                        كل الدرجات العلمية
-                                    </option>
-
-                                    {educationOptions.map((education) => (
-                                        <option
-                                            key={education}
-                                            value={education}
-                                        >
-                                            {education}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                        </div>
-                    </section>
-
-                    {/* =====================================================
-              Members Table
-          ====================================================== */}
-                    <section className="mb-8 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] shadow-[var(--shadow-card)]">
-
-                        <div className="border-b border-[var(--border-color)] px-6 py-5">
-                            <div className="flex items-center justify-between">
+                            {/* Modal Header */}
+                            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--card-bg)] px-3 pe-0 sm:px-6 py-5">
 
                                 <div>
                                     <h2 className="text-xl font-bold text-[var(--text-main)]">
-                                        {memberViewMode === "active" ? "أفراد الأسرة النشطة" : "أفراد الأسرة المحذوفة"}
+                                        {editingMember ? "تعديل بيانات الفرد" : "إضافة فرد"}
                                     </h2>
 
                                     <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                        {members.length} فرد
+                                        {editingMember
+                                            ? "تعديل بيانات الفرد بالأسرة"
+                                            : "أضف بيانات فرد جديد إلى الأسرة"}
                                     </p>
                                 </div>
+
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
+                                    className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
+                                >
+                                    ✕
+                                </button>
 
                             </div>
-                        </div>
 
-                        <div className="overflow-x-auto">
+                            {/* Form */}
+                            <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
 
-                            <table className="w-full min-w-[1000px] text-right">
-
-                                <thead className="bg-[var(--primary-light)]">
-
-                                    <tr>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الاسم
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الموبايل
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الرقم القومي
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الدرجة العلمية
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الوظيفة
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الدخل
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            صلة القرابة
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            رب الأسرة
-                                        </th>
-
-                                        <th className="px-5 py-4 text-sm font-bold text-[var(--text-main)]">
-                                            الأحداث
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody className="divide-y divide-[var(--border-color)]">
-
-                                    {members.map((member) => (
-
-                                        <tr
-                                            key={member.id}
-                                            className="transition-colors hover:bg-[var(--primary-light)]/40"
-                                        >
-
-                                            <td className="px-5 py-4 font-semibold text-[var(--text-main)]">
-                                                {member.name}
-                                            </td>
-
-                                            <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
-                                                {member.phone || "-"}
-                                            </td>
-
-                                            <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
-                                                {member.nationalId}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <span className="rounded-full bg-[var(--primary-light)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
-                                                    {member.education}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
-                                                {member.job || "-"}
-                                            </td>
-
-                                            <td className="px-5 py-4 text-sm text-[var(--text-muted)]">
-                                                {member.income
-                                                    ? `${member.income} جنيه`
-                                                    : "-"}
-                                            </td>
-
-                                            <td className="px-5 py-4 text-sm text-[var(--text-main)]">
-                                                {member.relation}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-
-                                                {member.isHead ? (
-                                                    <span className="inline-flex rounded-full bg-[var(--success-bg)] px-3 py-1 text-xs font-semibold text-[var(--success-text)]">
-                                                        نعم
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-sm text-[var(--text-muted)]">
-                                                        لا
-                                                    </span>
-                                                )}
-
-                                            </td>
-
-                                            {/* Actions */}
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    {/* Edit Button */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleOpenEditModal(member)}
-                                                        className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border-color)] bg-[var(--card-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] transition-all hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
-                                                    >
-                                                        تعديل
-                                                    </button>
-
-                                                    {/* Archive Button */}
-                                                    {!member.isArchived && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleArchiveMember(member.id)}
-                                                            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all hover:bg-amber-100"
-                                                        >
-                                                            إضافة للأرشيف
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-
-                                        </tr>
-
-                                    ))}
-
-                                </tbody>
-
-                            </table>
-
-                            {!loadingMembers && members.length === 0 && (
-                                <div className="px-6 py-12 text-center">
-                                    <p className="font-semibold text-[var(--text-main)]">
-                                        لا توجد نتائج
-                                    </p>
-
-                                    <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                        {memberViewMode === "archived"
-                                            ? "لا يوجد أفراد مؤرشفة لهذه الأسرة"
-                                            : "جرب تغيير بيانات البحث"}
-                                    </p>
-                                </div>
-                            )}
-
-                        </div>
-
-                    </section>
-
-                    {/* =====================================================
-              Print Button
-          ====================================================== */}
-                    <div className="flex justify-center pb-8">
-
-                        <button
-                            type="button"
-                            onClick={handlePrintReport}
-                            className="inline-flex items-center gap-3 rounded-[var(--radius-md)] bg-[var(--primary)] px-7 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-4 focus:ring-[var(--primary-focus)]"
-                        >
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.8}
-                                stroke="currentColor"
-                                className="h-5 w-5"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6.75 9V4.5h10.5V9M6 18H4.5A1.5 1.5 0 0 1 3 16.5v-6A1.5 1.5 0 0 1 4.5 9h15a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H18m-12 0v1.5A1.5 1.5 0 0 0 7.5 21h9a1.5 1.5 0 0 0 1.5-1.5V15H6v3Z"
+                                {/* Name */}
+                                <FormInput
+                                    label="الاسم"
+                                    placeholder="اسم الفرد"
+                                    value={form.name}
+                                    onChange={(value) =>
+                                        updateForm("name", value)
+                                    }
                                 />
-                            </svg>
 
-                            طباعة تقرير
-                        </button>
-
-                    </div>
-
-                </div>
-            </main>
-
-            {/* =========================================================
-                ADD / EDIT MEMBER MODAL
-            ========================================================== */}
-            {isModalOpen && (
-                <div
-                    dir="rtl"
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2 py-3 backdrop-blur-sm"
-                    onClick={resetForm}
-                >
-
-                    <div
-                        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border-color)] bg-[var(--card-bg)] shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-
-                        {/* Modal Header */}
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--card-bg)] px-3 pe-0 sm:px-6 py-5">
-
-                            <div>
-                                <h2 className="text-xl font-bold text-[var(--text-main)]">
-                                    {editingMember ? "تعديل بيانات الفرد" : "إضافة فرد"}
-                                </h2>
-
-                                <p className="mt-1 text-sm text-[var(--text-muted)]">
-                                    {editingMember
-                                        ? "تعديل بيانات الفرد بالأسرة"
-                                        : "أضف بيانات فرد جديد إلى الأسرة"}
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={resetForm}
-                                className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--primary-light)] hover:text-[var(--primary)]"
-                            >
-                                ✕
-                            </button>
-
-                        </div>
-
-                        {/* Form */}
-                        <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
-
-                            {/* Name */}
-                            <FormInput
-                                label="الاسم"
-                                placeholder="اسم الفرد"
-                                value={form.name}
-                                onChange={(value) =>
-                                    updateForm("name", value)
-                                }
-                            />
-
-                            {/* Phone */}
-                            <FormInput
-                                label="رقم الموبايل"
-                                placeholder="01xxxxxxxxx"
-                                value={form.phone}
-                                type="tel"
-                                inputMode="numeric"
-                                maxLength={11}
-                                error={phoneError}
-                                onChange={(value) =>
-                                    updateForm("phone", value)
-                                }
-                            />
-
-                            {/* National ID */}
-                            <FormInput
-                                label="الرقم القومي"
-                                placeholder="14 رقم"
-                                value={form.nationalId}
-                                type="text"
-                                inputMode="numeric"
-                                maxLength={14}
-                                error={nationalIdError}
-                                onChange={(value) =>
-                                    updateForm("nationalId", value)
-                                }
-                            />
-
-                            {/* Education */}
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
-                                    الدرجة العلمية
-                                </label>
-
-                                <select
-                                    value={form.education}
-                                    onChange={(e) =>
-                                        updateForm(
-                                            "education",
-                                            e.target.value
-                                        )
+                                {/* Phone */}
+                                <FormInput
+                                    label="رقم الموبايل"
+                                    placeholder="01xxxxxxxxx"
+                                    value={form.phone}
+                                    type="tel"
+                                    inputMode="numeric"
+                                    maxLength={11}
+                                    error={phoneError}
+                                    onChange={(value) =>
+                                        updateForm("phone", value)
                                     }
-                                    className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
-                                >
+                                />
 
-                                    <option value="">
-                                        اختر الدرجة العلمية
-                                    </option>
-
-                                    {educationOptions.map((education) => (
-                                        <option
-                                            key={education}
-                                            value={education}
-                                        >
-                                            {education}
-                                        </option>
-                                    ))}
-
-                                </select>
-                            </div>
-
-                            {/* Job */}
-                            <FormInput
-                                label="الوظيفة"
-                                placeholder="الوظيفة"
-                                value={form.job}
-                                onChange={(value) =>
-                                    updateForm("job", value)
-                                }
-                            />
-
-                            {/* Income */}
-                            <FormInput
-                                label="متوسط الدخل"
-                                placeholder="مثال: 10000"
-                                type="number"
-                                value={form.income}
-                                onChange={(value) =>
-                                    updateForm("income", value)
-                                }
-                            />
-
-                            {/* Relation */}
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
-                                    صلة القرابة
-                                </label>
-
-                                <select
-                                    value={form.relation}
-                                    onChange={(e) =>
-                                        updateForm(
-                                            "relation",
-                                            e.target.value
-                                        )
+                                {/* National ID */}
+                                <FormInput
+                                    label="الرقم القومي"
+                                    placeholder="14 رقم"
+                                    value={form.nationalId}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={14}
+                                    error={nationalIdError}
+                                    onChange={(value) =>
+                                        updateForm("nationalId", value)
                                     }
-                                    className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
-                                >
+                                />
 
-                                    <option value="">
-                                        اختر صلة القرابة
-                                    </option>
+                                {/* Education */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
+                                        الدرجة العلمية
+                                    </label>
 
-                                    {relationOptions.map((relation) => (
-                                        <option
-                                            key={relation}
-                                            value={relation}
-                                        >
-                                            {relation}
-                                        </option>
-                                    ))}
-
-                                </select>
-                            </div>
-
-                            {/* Head of Family */}
-                            <div className="sm:col-span-2">
-
-                                <label className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--primary-light)] p-4">
-
-                                    <input
-                                        type="checkbox"
-                                        checked={form.isHead}
+                                    <select
+                                        value={form.education}
                                         onChange={(e) =>
                                             updateForm(
-                                                "isHead",
-                                                e.target.checked
+                                                "education",
+                                                e.target.value
                                             )
                                         }
-                                        className="h-5 w-5 accent-[var(--primary)]"
-                                    />
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                    >
 
-                                    <div>
-                                        <p className="font-semibold text-[var(--text-main)]">
-                                            رب الأسرة
-                                        </p>
+                                        <option value="">
+                                            اختر الدرجة العلمية
+                                        </option>
 
-                                        <p className="mt-1 text-xs text-[var(--text-muted)]">
-                                            حدد الاختيار إذا كان هذا الشخص هو رب الأسرة
-                                        </p>
-                                    </div>
+                                        {educationOptions.map((education) => (
+                                            <option
+                                                key={education}
+                                                value={education}
+                                            >
+                                                {education}
+                                            </option>
+                                        ))}
 
-                                </label>
+                                    </select>
+                                </div>
+
+                                {/* Job */}
+                                <FormInput
+                                    label="الوظيفة"
+                                    placeholder="الوظيفة"
+                                    value={form.job}
+                                    onChange={(value) =>
+                                        updateForm("job", value)
+                                    }
+                                />
+
+                                {/* Income */}
+                                <FormInput
+                                    label="متوسط الدخل"
+                                    placeholder="مثال: 10000"
+                                    type="number"
+                                    value={form.income}
+                                    onChange={(value) =>
+                                        updateForm("income", value)
+                                    }
+                                />
+
+                                {/* Relation */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-semibold text-[var(--text-main)]">
+                                        صلة القرابة
+                                    </label>
+
+                                    <select
+                                        value={form.relation}
+                                        onChange={(e) =>
+                                            updateForm(
+                                                "relation",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]"
+                                    >
+
+                                        <option value="">
+                                            اختر صلة القرابة
+                                        </option>
+
+                                        {relationOptions.map((relation) => (
+                                            <option
+                                                key={relation}
+                                                value={relation}
+                                            >
+                                                {relation}
+                                            </option>
+                                        ))}
+
+                                    </select>
+                                </div>
+
+                                {/* Head of Family */}
+                                <div className="sm:col-span-2">
+
+                                    <label className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border-color)] bg-[var(--primary-light)] p-4">
+
+                                        <input
+                                            type="checkbox"
+                                            checked={form.isHead}
+                                            onChange={(e) =>
+                                                updateForm(
+                                                    "isHead",
+                                                    e.target.checked
+                                                )
+                                            }
+                                            className="h-5 w-5 accent-[var(--primary)]"
+                                        />
+
+                                        <div>
+                                            <p className="font-semibold text-[var(--text-main)]">
+                                                رب الأسرة
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                                حدد الاختيار إذا كان هذا الشخص هو رب الأسرة
+                                            </p>
+                                        </div>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            {/* Modal Buttons */}
+                            <div className="flex flex-col-reverse gap-3 border-t border-[var(--border-color)] p-6 sm:flex-row">
+
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
+                                    className="flex-1 rounded-[var(--radius-md)] border border-[var(--border-color)] px-5 py-3 text-sm font-semibold text-[var(--text-main)] transition hover:bg-[var(--primary-light)]"
+                                >
+                                    إلغاء
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleSaveMember}
+                                    disabled={
+                                        !form.name.trim() ||
+                                        !form.nationalId.trim() ||
+                                        !form.education ||
+                                        !form.relation ||
+                                        form.nationalId.trim().length !== 14 ||
+                                        isDuplicateNationalId ||
+                                        (form.phone.trim() !== "" && form.phone.trim().length !== 11) ||
+                                        isSubmitting
+                                    }
+                                    className="flex-1 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {isSubmitting ? "جاري الحفظ..." : "حفظ"}
+                                </button>
 
                             </div>
 
                         </div>
 
-                        {/* Modal Buttons */}
-                        <div className="flex flex-col-reverse gap-3 border-t border-[var(--border-color)] p-6 sm:flex-row">
-
-                            <button
-                                type="button"
-                                onClick={resetForm}
-                                className="flex-1 rounded-[var(--radius-md)] border border-[var(--border-color)] px-5 py-3 text-sm font-semibold text-[var(--text-main)] transition hover:bg-[var(--primary-light)]"
-                            >
-                                إلغاء
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={handleSaveMember}
-                                disabled={
-                                    !form.name.trim() ||
-                                    !form.nationalId.trim() ||
-                                    !form.education ||
-                                    !form.relation ||
-                                    form.nationalId.trim().length !== 14 ||
-                                    isDuplicateNationalId ||
-                                    (form.phone.trim() !== "" && form.phone.trim().length !== 11) ||
-                                    isSubmitting
-                                }
-                                className="flex-1 rounded-[var(--radius-md)] bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {isSubmitting ? "جاري الحفظ..." : "حفظ"}
-                            </button>
-
-                        </div>
-
                     </div>
-
-                </div>
-            )}
-
+                )}
+            </section>
             {/* =========================================================
           PDF REPORT
       ========================================================== */}
@@ -1578,9 +1577,8 @@ function FormInput({
                 inputMode={inputMode}
                 maxLength={maxLength}
                 onChange={(e) => onChange(e.target.value)}
-                className={`w-full rounded-[var(--radius-md)] border ${
-                    error ? "border-red-500" : "border-[var(--border-color)]"
-                } bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]`}
+                className={`w-full rounded-[var(--radius-md)] border ${error ? "border-red-500" : "border-[var(--border-color)]"
+                    } bg-[var(--bg-page)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary-focus)]`}
             />
 
             {error && (
